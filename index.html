@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 100px 20px 20px;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 4/3;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .camera-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .camera-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            border-radius: 50px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-display {
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .person-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .person-info {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .confidence {
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .status.loading {
+            background: rgba(255, 193, 7, 0.2);
+            border-color: rgba(255, 193, 7, 0.5);
+            color: #ffc107;
+        }
+
+        .status.ready {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: rgba(40, 167, 69, 0.5);
+            color: #28a745;
+        }
+
+        .status.error {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: rgba(220, 53, 69, 0.5);
+            color: #dc3545;
+        }
+
+        /* Settings Popup */
+        .settings-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .settings-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .save-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .face-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .face-item {
+            padding: 5px 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .face-item.success {
+            color: #28a745;
+        }
+
+        .face-item.error {
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 120px 15px 15px;
+            }
+
+            .camera-container {
+                max-width: 100%;
+            }
+
+            .person-name {
+                font-size: 2rem;
+            }
+
+            .settings-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">FaceID</div>
+        <button class="settings-btn" onclick="openSettings()">⚙️ Cài đặt</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="camera-container">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div class="camera-placeholder" id="placeholder">
+                <div class="camera-icon">📷</div>
+                <div>Camera chưa được khởi động</div>
+            </div>
+        </div>
+
+        <button class="start-btn" id="startBtn" onclick="toggleCamera()" disabled>
+            🚀 Bắt đầu
+        </button>
+
+        <div class="result-display" id="resultDisplay">
+            <div style="opacity: 0.5;">Hướng camera vào khuôn mặt để nhận diện</div>
+        </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">Chưa cài đặt</div>
+
+    <!-- Settings Popup -->
+    <div class="settings-popup" id="settingsPopup">
+        <div class="settings-content">
+            <div class="settings-header">
+                <div class="settings-title">⚙️ Cài đặt hệ thống</div>
+                <button class="close-btn" onclick="closeSettings()">✕</button>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Google Sheet ID</label>
+                <input type="text" class="input-field" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Google Sheets API Key</label>
+                <input type="text" class="input-field" id="apiKey" placeholder="AIzaSyC4sjQn-3rKqX7VdJlO2MpS4OfeN8XyYzM">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Upload ảnh khuôn mặt</label>
+                <div class="file-input-wrapper">
+                    <input type="file" class="file-input" id="faceImages" multiple accept="image/*">
+                    <label class="file-input-label" for="faceImages">
+                        📁 Chọn ảnh (tên file = tên người)
+                    </label>
+                </div>
+                <div class="face-list" id="faceList" style="display: none;"></div>
+            </div>
+
+            <button class="save-btn" onclick="saveSettings()">💾 Lưu cài đặt & Khởi tạo</button>
+        </div>
+    </div>
+
+    <script>
+        let isModelLoaded = false;
+        let isVideoStarted = false;
+        let labeledFaceDescriptors = [];
+        let faceMatcher = null;
+        let peopleData = {};
+        let stream = null;
+
+        const MODEL_URL = 'https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/weights';
+
+        // Settings popup functions
+        function openSettings() {
+            document.getElementById('settingsPopup').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPopup').style.display = 'none';
+        }
+
+        // Handle file selection
+        document.getElementById('faceImages').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                const label = document.querySelector('.file-input-label');
+                label.textContent = `📁 Đã chọn ${files.length} ảnh`;
+            }
+        });
+
+        // Save settings and initialize
+        async function saveSettings() {
+            const sheetId = document.getElementById('sheetId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const files = document.getElementById('faceImages').files;
+
+            if (!sheetId || !apiKey || files.length === 0) {
+                showStatus('Vui lòng điền đầy đủ thông tin!', 'error');
+                return;
+            }
+
+            showStatus('Đang xử lý...', 'loading');
+
+            try {
+                // Load face images
+                await loadFaceImages(files);
+                
+                // Load AI models
+                await loadModels();
+                
+                // Load Google Sheets data
+                await loadGoogleSheetsData(sheetId, apiKey);
+                
+                // Create face matcher
+                faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+                
+                isModelLoaded = true;
+                document.getElementById('startBtn').disabled = false;
+                showStatus('Hệ thống đã sẵn sàng!', 'ready');
+                closeSettings();
+
+            } catch (error) {
+                console.error('Lỗi khởi tạo:', error);
+                showStatus('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        // Load face images
+        async function loadFaceImages(files) {
+            labeledFaceDescriptors = [];
+            const faceList = document.getElementById('faceList');
+            faceList.innerHTML = '';
+            faceList.style.display = 'block';
+
+            for (let file of files) {
+                const personName = file.name.split('.')[0];
+                
+                try {
+                    const img = await loadImageFromFile(file);
+                    const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                    
+                    if (detection) {
+                        labeledFaceDescriptors.push(
+                            new faceapi.LabeledFaceDescriptors(personName, [detection.descriptor])
+                        );
+                        
+                        const faceItem = document.createElement('div');
+                        faceItem.className = 'face-item success';
+                        faceItem.textContent = `✓ ${personName}`;
+                        faceList.appendChild(faceItem);
+                    } else {
+                        const faceItem = document.createElement('div');
+                        faceItem.className = 'face-item error';
+                        faceItem.textContent = `✗ ${personName} - Không tìm thấy khuôn mặt`;
+                        faceList.appendChild(faceItem);
+                    }
+                } catch (error) {
+                    const faceItem = document.createElement('div');
+                    faceItem.className = 'face-item error';
+                    faceItem.textContent = `✗ ${personName} - Lỗi xử lý`;
+                    faceList.appendChild(faceItem);
+                }
+            }
+        }
+
+        // Load image from file
+        function loadImageFromFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = event.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Load AI models
+        async function loadModels() {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+        }
+
+        // Load Google Sheets data
+        async function loadGoogleSheetsData(sheetId, apiKey) {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:B?key=${apiKey}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.values) {
+                peopleData = {};
+                data.values.slice(1).forEach(row => {
+                    if (row[0] && row[1]) {
+                        peopleData[row[0]] = row[1];
+                    }
+                });
+            }
+        }
+
+        // Toggle camera
+        async function toggleCamera() {
+            if (!isVideoStarted) {
+                await startCamera();
+            } else {
+                stopCamera();
+            }
+        }
+
+        // Start camera
+        async function startCamera() {
+            if (!isModelLoaded) {
+                showStatus('Vui lòng cài đặt trước!', 'error');
+                return;
+            }
+
+            try {
+                const video = document.getElementById('video');
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+
+                video.addEventListener('loadedmetadata', () => {
+                    const canvas = document.getElementById('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    video.style.display = 'block';
+                    document.getElementById('placeholder').style.display = 'none';
+                    
+                    isVideoStarted = true;
+                    document.getElementById('startBtn').textContent = '⏹️ Dừng';
+                    
+                    recognizeFaces();
+                });
+
+            } catch (error) {
+                console.error('Lỗi camera:', error);
+                showStatus('Lỗi camera: ' + error.message, 'error');
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            const video = document.getElementById('video');
+            video.style.display = 'none';
+            document.getElementById('placeholder').style.display = 'flex';
+
+            isVideoStarted = false;
+            document.getElementById('startBtn').textContent = '🚀 Bắt đầu';
+            document.getElementById('resultDisplay').innerHTML = '<div style="opacity: 0.5;">Hướng camera vào khuôn mặt để nhận diện</div>';
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Recognize faces
+        async function recognizeFaces() {
+            if (!isVideoStarted) return;
+
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const detections = await faceapi
+                    .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptors();
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (detections.length > 0) {
+                    const results = detections.map(d => faceMatcher.findBestMatch(d.descriptor));
+                    
+                    detections.forEach((detection, i) => {
+                        const box = detection.detection.box;
+                        const result = results[i];
+
+                        // Draw bounding box
+                        ctx.strokeStyle = result.distance < 0.6 ? '#667eea' : 'rgba(255, 255, 255, 0.5)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                        // Show result
+                        if (result.distance < 0.6) {
+                            const personName = result.label;
+                            const additionalInfo = peopleData[personName] || '';
+                            const confidence = Math.round((1 - result.distance) * 100);
+                            
+                            document.getElementById('resultDisplay').innerHTML = `
+                                <div class="person-name">${personName}</div>
+                                <div class="person-info">${additionalInfo}</div>
+                                <div class="confidence">${confidence}% tin cậy</div>
+                            `;
+                        } else {
+                            document.getElementById('resultDisplay').innerHTML = `
+                                <div style="opacity: 0.5;">Không nhận diện được</div>
+                            `;
+                        }
+                    });
+                } else {
+                    document.getElementById('resultDisplay').innerHTML = `
+                        <div style="opacity: 0.5;">Không tìm thấy khuôn mặt</div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Lỗi nhận diện:', error);
+            }
+
+            setTimeout(recognizeFaces, 100);
+        }
+
+        // Show status
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Close settings when clicking outside
+        document.getElementById('settingsPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -414,10 +414,18 @@
             labeledFaceDescriptors = [];
             const peopleNames = Object.keys(peopleData);
             let loadedCount = 0;
+            let errorCount = 0;
+
+            showStatus(`Đang tải ${peopleNames.length} ảnh khuôn mặt...`, 'loading');
 
             for (const personName of peopleNames) {
                 try {
-                    const imagePath = `data/face/${personName}.jpg`;
+                    // Encode URI component to handle Vietnamese characters and spaces
+                    const encodedName = encodeURIComponent(personName);
+                    const imagePath = `data/face/${encodedName}.jpg`;
+                    
+                    console.log(`Đang tải ảnh: ${personName} -> ${imagePath}`);
+                    
                     const img = await loadImageFromUrl(imagePath);
                     const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                     
@@ -426,17 +434,24 @@
                             new faceapi.LabeledFaceDescriptors(personName, [detection.descriptor])
                         );
                         loadedCount++;
+                        console.log(`✓ Đã tải thành công: ${personName}`);
+                    } else {
+                        console.warn(`⚠ Không tìm thấy khuôn mặt trong ảnh: ${personName}`);
+                        errorCount++;
                     }
                 } catch (error) {
-                    console.warn(`Không thể tải ảnh cho ${personName}:`, error);
+                    console.warn(`✗ Lỗi tải ảnh cho ${personName}:`, error.message);
+                    errorCount++;
                 }
             }
 
-            console.log(`Đã tải ${loadedCount} khuôn mặt từ ${peopleNames.length} người`);
+            console.log(`Kết quả: ${loadedCount} thành công, ${errorCount} lỗi từ ${peopleNames.length} người`);
             
             if (loadedCount === 0) {
-                throw new Error('Không tải được ảnh nào. Kiểm tra thư mục data/face/');
+                throw new Error(`Không tải được ảnh nào. Kiểm tra:\n1. Thư mục data/face/ có tồn tại\n2. Tên file ảnh khớp với tên trong Excel\n3. File ảnh có định dạng .jpg`);
             }
+
+            showStatus(`Đã tải ${loadedCount}/${peopleNames.length} khuôn mặt`, 'ready');
         }
 
         // Load image from URL
@@ -609,7 +624,32 @@
                 return;
             }
 
-            const personInfo = peopleData[searchTerm];
+            // Tìm kiếm chính xác trước
+            let personInfo = peopleData[searchTerm];
+            
+            // Nếu không tìm thấy, thử tìm kiếm gần đúng (không phân biệt hoa thường)
+            if (!personInfo) {
+                const lowerSearchTerm = searchTerm.toLowerCase();
+                const foundKey = Object.keys(peopleData).find(key => 
+                    key.toLowerCase() === lowerSearchTerm
+                );
+                if (foundKey) {
+                    personInfo = peopleData[foundKey];
+                }
+            }
+
+            // Nếu vẫn không tìm thấy, thử tìm kiếm chứa từ khóa
+            if (!personInfo) {
+                const lowerSearchTerm = searchTerm.toLowerCase();
+                const foundKey = Object.keys(peopleData).find(key => 
+                    key.toLowerCase().includes(lowerSearchTerm) || 
+                    lowerSearchTerm.includes(key.toLowerCase())
+                );
+                if (foundKey) {
+                    personInfo = peopleData[foundKey];
+                }
+            }
+
             if (personInfo) {
                 const todaySchedule = getTodaySchedule(personInfo);
                 document.getElementById('searchResult').innerHTML = `
@@ -625,8 +665,20 @@
                     </div>
                 `;
             } else {
+                // Hiển thị gợi ý nếu không tìm thấy
+                const suggestions = Object.keys(peopleData).filter(name => 
+                    name.toLowerCase().includes(searchTerm.toLowerCase().substring(0, 3))
+                ).slice(0, 3);
+                
+                let suggestionText = '';
+                if (suggestions.length > 0) {
+                    suggestionText = `<br><small>Có phải bạn muốn tìm: ${suggestions.join(', ')}?</small>`;
+                }
+                
                 document.getElementById('searchResult').innerHTML = `
-                    <div style="opacity: 0.5; color: #dc3545;">Không tìm thấy người này</div>
+                    <div style="opacity: 0.5; color: #dc3545;">
+                        Không tìm thấy "${searchTerm}"${suggestionText}
+                    </div>
                 `;
             }
         }

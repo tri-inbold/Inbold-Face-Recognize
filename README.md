@@ -3,10 +3,16 @@ A real-time face recognition web application that runs entirely in the browser. 
 https://tri-inbold.github.io/Inbold-Face-Recognize/
 
 # Features
-- Real-time face recognition via camera (Mobile).
-- Snapshot mode for improved accuracy (Mobile).
-- Search for user information by name (Desktop).
-- Automatically displays data from an Excel file based on the day of the week.
+- Real-time face recognition via camera.
+- Snapshot mode for improved accuracy.
+- Search for user information by name.
+- Displays menu on the day of the week.
+
+# How to use
+- Auto recognition 
+- Click on camera toggle detech mode
+- Hold to capture image (high effect)
+- Tab menu to look all
 
 # Tech Stack
 - HTML, CSS, JavaScript

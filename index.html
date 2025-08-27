@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InBold Face Recognition - Debug</title>
+    <title>InBold Face Recognition - Fixed</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
@@ -21,16 +21,7 @@
         #user-info { font-size: 1.2em; min-height: 50px; word-wrap: break-word; }
         .hidden { display: none !important; }
         #debug-info { 
-            background: #f8f9fa; 
-            border: 1px solid #dee2e6; 
-            border-radius: 5px; 
-            padding: 10px; 
-            margin: 20px 0; 
-            font-family: monospace; 
-            font-size: 12px; 
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
+            background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; margin: 20px 0; font-family: monospace; font-size: 12px; text-align: left; max-height: 200px; overflow-y: auto;
         }
     </style>
 </head>
@@ -66,7 +57,6 @@
             let allUsersData = [];
             const MODEL_URL = 'models';
 
-            // Debug function
             function addDebugMessage(message) {
                 console.log(message);
                 debugInfo.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
@@ -75,200 +65,87 @@
 
             function removeDiacritics(str) {
                 if (!str) return '';
-                return str
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .replace(/đ/g, 'd')
-                    .replace(/Đ/g, 'D');
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
             }
 
             async function loadModels() {
-                try {
-                    addDebugMessage('Bắt đầu tải models...');
-                    await Promise.all([
-                        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-                    ]);
-                    addDebugMessage('✅ Tải models thành công');
-                } catch (error) {
-                    addDebugMessage(`❌ Lỗi tải models: ${error.message}`);
-                    loader.innerText = 'Lỗi: Không thể tải model. Vui lòng kiểm tra lại thư mục models.';
-                    throw error;
-                }
+                addDebugMessage('Bắt đầu tải models...');
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                addDebugMessage('✅ Tải models thành công');
             }
 
             async function loadUserDataFromExcel() {
-                try {
-                    addDebugMessage('Bắt đầu tải file Excel...');
-                    const response = await fetch('data/InBold.xlsx');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const arrayBuffer = await response.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    
-                    // Thử nhiều cách đọc dữ liệu
-                    addDebugMessage(`Sheet name: ${sheetName}`);
-                    
-                    // Phương pháp 1: Đọc bình thường
-                    allUsersData = XLSX.utils.sheet_to_json(worksheet);
-                    addDebugMessage(`Phương pháp 1 - Số dòng: ${allUsersData.length}`);
-                    
-                    if (allUsersData.length > 0) {
-                        addDebugMessage(`Các cột có sẵn: [${Object.keys(allUsersData[0]).join(', ')}]`);
-                        addDebugMessage(`Dòng đầu tiên: ${JSON.stringify(allUsersData[0])}`);
-                    } else {
-                        // Phương pháp 2: Đọc với header tùy chỉnh
-                        addDebugMessage('Thử phương pháp 2 - đọc với header từ dòng 2...');
-                        allUsersData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
-                        addDebugMessage(`Phương pháp 2 - Số dòng: ${allUsersData.length}`);
-                        
-                        if (allUsersData.length > 0) {
-                            addDebugMessage(`Các cột (method 2): [${Object.keys(allUsersData[0]).join(', ')}]`);
-                        }
-                    }
-                    
-                    // Phương pháp 3: Đọc raw data để debug
-                    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    addDebugMessage(`Raw data - ${rawData.length} dòng:`);
-                    for (let i = 0; i < Math.min(5, rawData.length); i++) {
-                        addDebugMessage(`Dòng ${i + 1}: [${rawData[i].join(' | ')}]`);
-                    }
-                    
-                    if (allUsersData.length === 0) {
-                        throw new Error("File Excel không có dữ liệu hoặc sai định dạng.");
-                    }
-                    
-                    addDebugMessage(`✅ Tải Excel thành công: ${allUsersData.length} dòng dữ liệu`);
-                    
-                } catch (error) {
-                    addDebugMessage(`❌ Lỗi tải Excel: ${error.message}`);
-                    loader.innerText = 'Lỗi: Không thể tải file InBold.xlsx.';
-                    throw error;
-                }
+                addDebugMessage('Bắt đầu tải file Excel...');
+                const response = await fetch('data/InBold.xlsx');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                allUsersData = XLSX.utils.sheet_to_json(worksheet);
+                if (allUsersData.length === 0) throw new Error("File Excel không có dữ liệu.");
+                addDebugMessage(`✅ Tải Excel thành công: ${allUsersData.length} dòng dữ liệu`);
             }
 
             async function createLabeledFaceDescriptors() {
-                if (!allUsersData || allUsersData.length === 0) {
-                    addDebugMessage('❌ Không có dữ liệu user để xử lý');
-                    return [];
-                }
-                
                 addDebugMessage(`Bắt đầu xử lý ${allUsersData.length} ảnh...`);
                 loader.innerText = `Đang xử lý ${allUsersData.length} ảnh...`;
-                
                 const labeledFaceDescriptors = [];
-                
-                // Tìm tên cột chứa họ tên (flexible)
-                let nameColumn = null;
-                if (allUsersData.length > 0) {
-                    const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name', 'Họ và tên'];
-                    for (const col of possibleColumns) {
-                        if (allUsersData[0].hasOwnProperty(col)) {
-                            nameColumn = col;
-                            addDebugMessage(`✅ Tìm thấy cột tên: "${nameColumn}"`);
-                            break;
-                        }
-                    }
-                    // Nếu không tìm thấy, lấy cột đầu tiên
-                    if (!nameColumn) {
-                        const firstKey = Object.keys(allUsersData[0])[0];
-                        nameColumn = firstKey;
-                        addDebugMessage(`⚠️ Không tìm thấy cột tên chuẩn, sử dụng cột: "${firstKey}"`);
-                    }
-                }
-                
+                const nameColumn = Object.keys(allUsersData[0])[0]; // Giả định cột tên luôn là cột đầu tiên
+                addDebugMessage(`Sử dụng cột tên: "${nameColumn}"`);
+
                 for (let index = 0; index < allUsersData.length; index++) {
                     const user = allUsersData[index];
                     const nameWithDiacritics = user[nameColumn];
-                    
-                    if (!nameWithDiacritics || nameWithDiacritics.toString().trim() === '') {
-                        addDebugMessage(`⚠️ Bỏ qua dòng ${index + 1}: Không có tên (giá trị: "${nameWithDiacritics}")`);
-                        addDebugMessage(`   Dữ liệu dòng: ${JSON.stringify(user)}`);
+                    if (!nameWithDiacritics) {
+                        addDebugMessage(`⚠️ Bỏ qua dòng ${index + 2}: Tên trống.`);
                         continue;
                     }
-
                     const nameWithoutDiacritics = removeDiacritics(nameWithDiacritics);
                     const imgUrl = `data/face/${nameWithoutDiacritics}.jpg`;
-                    
-                    addDebugMessage(`Xử lý ${index + 1}/${allUsersData.length}: "${nameWithDiacritics}" -> "${nameWithoutDiacritics}.jpg"`);
-
                     try {
-                        // Kiểm tra xem file có tồn tại không
-                        const imgResponse = await fetch(imgUrl);
-                        if (!imgResponse.ok) {
-                            addDebugMessage(`❌ Không tìm thấy file: ${imgUrl} (Status: ${imgResponse.status})`);
-                            continue;
-                        }
-                        
                         const img = await faceapi.fetchImage(imgUrl);
-                        addDebugMessage(`✅ Tải ảnh thành công: ${imgUrl}`);
-                        
                         const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                        
                         if (detections) {
                             labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(nameWithDiacritics, [detections.descriptor]));
-                            addDebugMessage(`✅ Phát hiện khuôn mặt thành công: "${nameWithDiacritics}"`);
                         } else {
-                            addDebugMessage(`❌ Không phát hiện được khuôn mặt trong: ${imgUrl}`);
+                            addDebugMessage(`❌ Không phát hiện khuôn mặt trong: ${imgUrl}`);
                         }
-                        
                         loader.innerText = `Đang xử lý ảnh: ${index + 1}/${allUsersData.length}`;
-                        
                     } catch (e) {
-                        addDebugMessage(`❌ Lỗi xử lý "${nameWithDiacritics}": ${e.message}`);
+                        addDebugMessage(`❌ Lỗi tải ảnh ${imgUrl}: ${e.message}`);
                     }
                 }
-                
-                addDebugMessage(`🎉 Hoàn thành! Xử lý thành công ${labeledFaceDescriptors.length}/${allUsersData.length} ảnh`);
+                addDebugMessage(`🎉 Hoàn thành! Xử lý thành công ${labeledFaceDescriptors.length}/${allUsersData.length} ảnh có khuôn mặt.`);
                 return labeledFaceDescriptors;
             }
 
             function startCamera() {
                 addDebugMessage('Khởi động camera...');
                 navigator.mediaDevices.getUserMedia({ video: {} })
-                    .then(stream => { 
+                    .then(stream => {
                         video.srcObject = stream;
                         addDebugMessage('✅ Camera khởi động thành công');
                     })
                     .catch(err => {
                         addDebugMessage(`❌ Lỗi camera: ${err.message}`);
-                        loader.innerText = 'Lỗi! Không thể truy cập camera. Vui lòng cấp quyền.';
                     });
             }
 
             function displayUserInfo(name) {
-                // Tìm kiếm linh hoạt với tên cột
-                let nameColumn = 'Tên';
-                if (allUsersData.length > 0) {
-                    const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name', 'Họ và tên'];
-                    for (const col of possibleColumns) {
-                        if (allUsersData[0].hasOwnProperty(col)) {
-                            nameColumn = col;
-                            break;
-                        }
-                    }
-                    if (!nameColumn) {
-                        nameColumn = Object.keys(allUsersData[0])[0];
-                    }
-                }
-                
+                const nameColumn = Object.keys(allUsersData[0])[0];
                 const user = allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
                 if (user) {
                     const today = new Date().getDay();
-                    const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ 7'];
-                    const currentDayKey = (today >= 2 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                    // ### SỬA LỖI LOGIC 2 ### - Thêm khoảng trắng vào tên các thứ
+                    const dayMapping = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const currentDayKey = (today >= 1 && today <= 5) ? dayMapping[today] : 'Thứ 2'; // Mặc định là T2 nếu là cuối tuần
                     userNameDisplay.innerText = user[nameColumn];
                     userInfoDisplay.innerText = user[currentDayKey] || 'Không có thông tin cho ngày hôm nay.';
-                    addDebugMessage(`Hiển thị thông tin cho: ${user[nameColumn]}`);
-                } else {
-                    userNameDisplay.innerText = 'Không nhận diện được';
-                    userInfoDisplay.innerText = 'Vui lòng giữ khuôn mặt ổn định trong khung hình.';
-                    addDebugMessage(`Không tìm thấy user: ${name}`);
                 }
             }
 
@@ -276,102 +153,61 @@
                 try {
                     await Promise.all([loadModels(), loadUserDataFromExcel()]);
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    
                     addDebugMessage(`Thiết bị: ${isMobile ? 'Mobile' : 'Desktop'}`);
-                    
                     if (isMobile) {
                         cameraContainer.classList.remove('hidden');
                         startCamera();
                         const labeledFaceDescriptors = await createLabeledFaceDescriptors();
-                        
                         if (labeledFaceDescriptors.length === 0) {
-                            loader.innerText = "Lỗi: Không có dữ liệu khuôn mặt nào được xử lý. Kiểm tra Debug Info bên dưới.";
+                            loader.innerText = "Lỗi: Không có dữ liệu khuôn mặt nào được xử lý.";
                             addDebugMessage('❌ KHÔNG CÓ KHUÔN MẶT NÀO ĐƯỢC XỬ LÝ THÀNH CÔNG!');
                             return;
                         }
-                        
                         const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
                         loader.classList.add('hidden');
                         addDebugMessage('🎉 Khởi động hoàn tất, bắt đầu nhận diện...');
-                        
-                        let detectionActive = false;
-                        
-                        video.addEventListener('loadedmetadata', () => {
-                            addDebugMessage('✅ Video metadata loaded');
-                            setTimeout(() => {
-                                addDebugMessage('Bắt đầu detection loop...');
-                                detectionActive = true;
-                                detectFaces();
-                            }, 1000); // Đợi 1 giây để video ổn định
-                        });
-                        
-                        async function detectFaces() {
-                            if (!detectionActive) return;
+
+                        // ### SỬA LỖI CHÍNH ###
+                        // Sử dụng sự kiện 'play' để đảm bảo video đã sẵn sàng
+                        video.addEventListener('play', () => {
+                            addDebugMessage('✅ Video đã bắt đầu phát. Khởi tạo vòng lặp nhận diện...');
                             
-                            try {
-                                addDebugMessage('🔍 Đang thử detect khuôn mặt...');
-                                const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                            // Sử dụng setInterval để lặp lại việc nhận diện một cách nhất quán
+                            setInterval(async () => {
+                                addDebugMessage('🔍 Đang quét khuôn mặt...');
+                                
+                                const detection = await faceapi.detectSingleFace(video)
                                     .withFaceLandmarks()
                                     .withFaceDescriptor();
                                 
                                 if (detection) {
-                                    addDebugMessage('✅ Phát hiện khuôn mặt!');
+                                    addDebugMessage('✅ Phát hiện được một khuôn mặt!');
                                     const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-                                    addDebugMessage(`🎯 Best match: ${bestMatch.label} (distance: ${bestMatch.distance.toFixed(2)})`);
-                                    
-                                    if (bestMatch.distance < 0.6) { // Threshold để chấp nhận
-                                        displayUserInfo(bestMatch.label);
-                                    } else {
-                                        addDebugMessage('⚠️ Distance quá cao, không chấp nhận match');
-                                        userNameDisplay.innerText = 'Không nhận diện được';
-                                        userInfoDisplay.innerText = 'Vui lòng giữ khuôn mặt ổn định trong khung hình.';
-                                    }
+                                    addDebugMessage(`🎯 Kết quả: ${bestMatch.label} (độ sai khác: ${bestMatch.distance.toFixed(2)})`);
+                                    displayUserInfo(bestMatch.label);
                                 } else {
-                                    addDebugMessage('❌ Không phát hiện được khuôn mặt');
+                                    addDebugMessage('... không có khuôn mặt trong khung hình.');
                                 }
-                            } catch (error) {
-                                addDebugMessage(`❌ Lỗi detection: ${error.message}`);
-                            }
-                            
-                            // Lặp lại sau 1 giây
-                            setTimeout(detectFaces, 1000);
-                        }
-                    } else {
+                            }, 1500); // Lặp lại mỗi 1.5 giây để giảm tải cho thiết bị
+                        });
+
+                    } else { // Chế độ Desktop
                         desktopContainer.classList.remove('hidden');
                         loader.classList.add('hidden');
                         addDebugMessage('Desktop mode - sẵn sàng nhận input');
-                        
+                        const nameColumn = Object.keys(allUsersData[0])[0];
                         nameInput.addEventListener('keypress', (e) => {
                             if (e.key === 'Enter') {
                                 const name = nameInput.value.trim();
                                 if (name) {
-                                    // Tìm tên cột
-                                    let nameColumn = 'Tên';
-                                    if (allUsersData.length > 0) {
-                                        const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name', 'Họ và tên'];
-                                        for (const col of possibleColumns) {
-                                            if (allUsersData[0].hasOwnProperty(col)) {
-                                                nameColumn = col;
-                                                break;
-                                            }
-                                        }
-                                        if (!nameColumn) {
-                                            nameColumn = Object.keys(allUsersData[0])[0];
-                                        }
-                                    }
-                                    
-                                    const userFound = allUsersData.find(u => 
-                                        u[nameColumn] && (
-                                            u[nameColumn].toLowerCase() === name.toLowerCase() || 
-                                            removeDiacritics(u[nameColumn]).toLowerCase() === name.toLowerCase()
-                                        )
+                                    const userFound = allUsersData.find(u =>
+                                        u[nameColumn] && (u[nameColumn].toLowerCase() === name.toLowerCase() || removeDiacritics(u[nameColumn]).toLowerCase() === name.toLowerCase())
                                     );
                                     if (userFound) {
                                         displayUserInfo(userFound[nameColumn]);
                                     } else {
                                         userNameDisplay.innerText = 'Không tìm thấy';
                                         userInfoDisplay.innerText = 'Vui lòng kiểm tra lại tên đã nhập.';
-                                        addDebugMessage(`Không tìm thấy: "${name}"`);
                                     }
                                 }
                             }
@@ -379,10 +215,8 @@
                     }
                 } catch (error) {
                     addDebugMessage(`❌ Lỗi nghiêm trọng: ${error.message}`);
-                    console.error("Đã có lỗi nghiêm trọng xảy ra khi khởi tạo ứng dụng.", error);
                 }
             }
-            
             run();
         });
     </script>

@@ -294,22 +294,48 @@
                         loader.classList.add('hidden');
                         addDebugMessage('🎉 Khởi động hoàn tất, bắt đầu nhận diện...');
                         
-                        video.addEventListener('play', () => {
-                            let isDetecting = false;
-                            setInterval(async () => {
-                                if (isDetecting) return;
-                                isDetecting = true;
-                                try {
-                                    const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-                                    if (detection) {
-                                        const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-                                        displayUserInfo(bestMatch.label);
-                                    }
-                                } finally {
-                                    isDetecting = false;
-                                }
-                            }, 700);
+                        let detectionActive = false;
+                        
+                        video.addEventListener('loadedmetadata', () => {
+                            addDebugMessage('✅ Video metadata loaded');
+                            setTimeout(() => {
+                                addDebugMessage('Bắt đầu detection loop...');
+                                detectionActive = true;
+                                detectFaces();
+                            }, 1000); // Đợi 1 giây để video ổn định
                         });
+                        
+                        async function detectFaces() {
+                            if (!detectionActive) return;
+                            
+                            try {
+                                addDebugMessage('🔍 Đang thử detect khuôn mặt...');
+                                const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                                    .withFaceLandmarks()
+                                    .withFaceDescriptor();
+                                
+                                if (detection) {
+                                    addDebugMessage('✅ Phát hiện khuôn mặt!');
+                                    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                                    addDebugMessage(`🎯 Best match: ${bestMatch.label} (distance: ${bestMatch.distance.toFixed(2)})`);
+                                    
+                                    if (bestMatch.distance < 0.6) { // Threshold để chấp nhận
+                                        displayUserInfo(bestMatch.label);
+                                    } else {
+                                        addDebugMessage('⚠️ Distance quá cao, không chấp nhận match');
+                                        userNameDisplay.innerText = 'Không nhận diện được';
+                                        userInfoDisplay.innerText = 'Vui lòng giữ khuôn mặt ổn định trong khung hình.';
+                                    }
+                                } else {
+                                    addDebugMessage('❌ Không phát hiện được khuôn mặt');
+                                }
+                            } catch (error) {
+                                addDebugMessage(`❌ Lỗi detection: ${error.message}`);
+                            }
+                            
+                            // Lặp lại sau 1 giây
+                            setTimeout(detectFaces, 1000);
+                        }
                     } else {
                         desktopContainer.classList.remove('hidden');
                         loader.classList.add('hidden');

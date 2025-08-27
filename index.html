@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Recognition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -17,10 +18,6 @@
             background: #0a0a0a;
             color: #ffffff;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             overflow-x: hidden;
         }
 
@@ -30,11 +27,11 @@
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(10, 10, 10, 0.8);
+            background: rgba(10, 10, 10, 0.9);
             backdrop-filter: blur(20px);
-            padding: 20px;
+            padding: 15px 20px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
 
@@ -47,43 +44,28 @@
             background-clip: text;
         }
 
-        .settings-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 50px;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .settings-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        /* Mobile Interface */
+        .mobile-container {
+            display: block;
+            padding: 80px 20px 20px;
             min-height: 100vh;
-            padding: 100px 20px 20px;
+        }
+
+        .camera-section {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         .camera-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
-            aspect-ratio: 4/3;
+            max-width: 400px;
+            aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
             overflow: hidden;
-            margin-bottom: 30px;
+            margin: 0 auto 20px;
         }
 
         #video {
@@ -99,6 +81,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            border-radius: 50%;
         }
 
         .camera-placeholder {
@@ -112,48 +95,56 @@
             align-items: center;
             justify-content: center;
             background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
         }
 
         .camera-icon {
             font-size: 4rem;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             opacity: 0.3;
         }
 
-        .start-btn {
+        .camera-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
+            border: 4px solid rgba(255, 255, 255, 0.2);
             color: white;
-            border-radius: 50px;
-            padding: 16px 32px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 2rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
         }
 
-        .start-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        .camera-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
 
-        .start-btn:disabled {
+        .camera-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
         .result-display {
             text-align: center;
-            min-height: 100px;
+            min-height: 150px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
         }
 
         .person-name {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             margin-bottom: 10px;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -162,15 +153,82 @@
             background-clip: text;
         }
 
-        .person-info {
-            font-size: 1.2rem;
-            opacity: 0.8;
+        .person-schedule {
+            font-size: 1.1rem;
+            color: #4CAF50;
+            font-weight: 600;
             margin-bottom: 10px;
         }
 
         .confidence {
             font-size: 0.9rem;
             opacity: 0.6;
+        }
+
+        /* Desktop Interface */
+        .desktop-container {
+            display: none;
+            padding: 80px 20px 20px;
+            min-height: 100vh;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .search-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        .search-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
 
         .status {
@@ -185,6 +243,8 @@
             font-size: 14px;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            max-width: 90%;
+            text-align: center;
         }
 
         .status.loading {
@@ -205,177 +265,22 @@
             color: #dc3545;
         }
 
-        /* Settings Popup */
-        .settings-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .settings-content {
-            background: #1a1a1a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .settings-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.3s;
-        }
-
-        .close-btn:hover {
-            opacity: 1;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-        }
-
-        .input-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .input-field::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .file-input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .file-input-label {
-            display: block;
-            padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-input-label:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .save-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            color: white;
-            border-radius: 10px;
-            padding: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .save-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .face-list {
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 10px;
-        }
-
-        .face-item {
-            padding: 5px 0;
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        .face-item.success {
-            color: #28a745;
-        }
-
-        .face-item.error {
-            color: #dc3545;
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 120px 15px 15px;
+        /* Responsive */
+        @media (min-width: 768px) {
+            .mobile-container {
+                display: none;
             }
+            .desktop-container {
+                display: block;
+            }
+        }
 
+        @media (max-width: 767px) {
             .camera-container {
-                max-width: 100%;
+                max-width: 300px;
             }
-
             .person-name {
-                font-size: 2rem;
-            }
-
-            .settings-content {
-                padding: 30px 20px;
+                font-size: 1.8rem;
             }
         }
     </style>
@@ -383,65 +288,46 @@
 <body>
     <!-- Header -->
     <div class="header">
-        <div class="logo">FaceID</div>
-        <button class="settings-btn" onclick="openSettings()">⚙️ Cài đặt</button>
+        <div class="logo">FaceID Scanner</div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-container">
-        <div class="camera-container">
-            <video id="video" autoplay muted playsinline></video>
-            <canvas id="canvas"></canvas>
-            <div class="camera-placeholder" id="placeholder">
-                <div class="camera-icon">📷</div>
-                <div>Camera chưa được khởi động</div>
+    <!-- Mobile Interface -->
+    <div class="mobile-container" id="mobileContainer">
+        <div class="camera-section">
+            <div class="camera-container">
+                <video id="video" autoplay muted playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div class="camera-placeholder" id="placeholder">
+                    <div class="camera-icon">📷</div>
+                    <div>Nhấn nút để bắt đầu</div>
+                </div>
             </div>
-        </div>
 
-        <button class="start-btn" id="startBtn" onclick="toggleCamera()" disabled>
-            🚀 Bắt đầu
-        </button>
+            <button class="camera-btn" id="cameraBtn" onclick="toggleCamera()" disabled>
+                📷
+            </button>
+        </div>
 
         <div class="result-display" id="resultDisplay">
             <div style="opacity: 0.5;">Hướng camera vào khuôn mặt để nhận diện</div>
         </div>
     </div>
 
-    <!-- Status -->
-    <div class="status" id="status">Chưa cài đặt</div>
+    <!-- Desktop Interface -->
+    <div class="desktop-container" id="desktopContainer">
+        <div class="search-section">
+            <div class="search-title">🔍 Tra cứu lịch làm việc</div>
+            <input type="text" class="search-input" id="searchInput" placeholder="Nhập tên người cần tra cứu..." />
+            <button class="search-btn" onclick="searchPerson()">Tìm kiếm</button>
+        </div>
 
-    <!-- Settings Popup -->
-    <div class="settings-popup" id="settingsPopup">
-        <div class="settings-content">
-            <div class="settings-header">
-                <div class="settings-title">⚙️ Cài đặt hệ thống</div>
-                <button class="close-btn" onclick="closeSettings()">✕</button>
-            </div>
-
-            <div class="input-group">
-                <label class="input-label">Google Sheet ID</label>
-                <input type="text" class="input-field" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms">
-            </div>
-
-            <div class="input-group">
-                <label class="input-label">Google Sheets API Key</label>
-                <input type="text" class="input-field" id="apiKey" placeholder="AIzaSyC4sjQn-3rKqX7VdJlO2MpS4OfeN8XyYzM">
-            </div>
-
-            <div class="input-group">
-                <label class="input-label">Upload ảnh khuôn mặt</label>
-                <div class="file-input-wrapper">
-                    <input type="file" class="file-input" id="faceImages" multiple accept="image/*">
-                    <label class="file-input-label" for="faceImages">
-                        📁 Chọn ảnh (tên file = tên người)
-                    </label>
-                </div>
-                <div class="face-list" id="faceList" style="display: none;"></div>
-            </div>
-
-            <button class="save-btn" onclick="saveSettings()">💾 Lưu cài đặt & Khởi tạo</button>
+        <div class="result-display" id="searchResult">
+            <div style="opacity: 0.5;">Nhập tên để tra cứu thông tin</div>
         </div>
     </div>
+
+    <!-- Status -->
+    <div class="status" id="status">Đang khởi tạo...</div>
 
     <script>
         let isModelLoaded = false;
@@ -453,54 +339,29 @@
 
         const MODEL_URL = 'https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/weights';
 
-        // Settings popup functions
-        function openSettings() {
-            document.getElementById('settingsPopup').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsPopup').style.display = 'none';
-        }
-
-        // Handle file selection
-        document.getElementById('faceImages').addEventListener('change', function(e) {
-            const files = e.target.files;
-            if (files.length > 0) {
-                const label = document.querySelector('.file-input-label');
-                label.textContent = `📁 Đã chọn ${files.length} ảnh`;
-            }
+        // Initialize system on load
+        window.addEventListener('load', async () => {
+            await initializeSystem();
         });
 
-        // Save settings and initialize
-        async function saveSettings() {
-            const sheetId = document.getElementById('sheetId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const files = document.getElementById('faceImages').files;
-
-            if (!sheetId || !apiKey || files.length === 0) {
-                showStatus('Vui lòng điền đầy đủ thông tin!', 'error');
-                return;
-            }
-
-            showStatus('Đang xử lý...', 'loading');
+        // Initialize system
+        async function initializeSystem() {
+            showStatus('Đang tải dữ liệu...', 'loading');
 
             try {
-                // Load face images
-                await loadFaceImages(files);
+                // Load Excel data
+                await loadExcelData();
                 
-                // Load AI models
-                await loadModels();
-                
-                // Load Google Sheets data
-                await loadGoogleSheetsData(sheetId, apiKey);
-                
-                // Create face matcher
-                faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+                // Load face images (only on mobile)
+                if (isMobile()) {
+                    await loadFaceImages();
+                    await loadModels();
+                    faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+                    document.getElementById('cameraBtn').disabled = false;
+                }
                 
                 isModelLoaded = true;
-                document.getElementById('startBtn').disabled = false;
                 showStatus('Hệ thống đã sẵn sàng!', 'ready');
-                closeSettings();
 
             } catch (error) {
                 console.error('Lỗi khởi tạo:', error);
@@ -508,56 +369,84 @@
             }
         }
 
-        // Load face images
-        async function loadFaceImages(files) {
-            labeledFaceDescriptors = [];
-            const faceList = document.getElementById('faceList');
-            faceList.innerHTML = '';
-            faceList.style.display = 'block';
+        // Check if mobile device
+        function isMobile() {
+            return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
 
-            for (let file of files) {
-                const personName = file.name.split('.')[0];
+        // Load Excel data
+        async function loadExcelData() {
+            try {
+                const response = await fetch('data/InBold.xlsx');
+                if (!response.ok) {
+                    throw new Error('Không thể tải file Excel. Đảm bảo file data/InBold.xlsx tồn tại.');
+                }
                 
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                peopleData = {};
+                
+                // Skip header row and process data
+                jsonData.slice(1).forEach(row => {
+                    if (row[0]) { // If name exists
+                        peopleData[row[0]] = {
+                            name: row[0],
+                            monday: row[1] || '',
+                            tuesday: row[2] || '',
+                            wednesday: row[3] || '',
+                            thursday: row[4] || '',
+                            friday: row[5] || ''
+                        };
+                    }
+                });
+
+                console.log('Đã tải dữ liệu Excel:', Object.keys(peopleData).length, 'người');
+            } catch (error) {
+                throw new Error('Lỗi tải Excel: ' + error.message);
+            }
+        }
+
+        // Load face images from folder
+        async function loadFaceImages() {
+            labeledFaceDescriptors = [];
+            const peopleNames = Object.keys(peopleData);
+            let loadedCount = 0;
+
+            for (const personName of peopleNames) {
                 try {
-                    const img = await loadImageFromFile(file);
+                    const imagePath = `data/face/${personName}.jpg`;
+                    const img = await loadImageFromUrl(imagePath);
                     const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                     
                     if (detection) {
                         labeledFaceDescriptors.push(
                             new faceapi.LabeledFaceDescriptors(personName, [detection.descriptor])
                         );
-                        
-                        const faceItem = document.createElement('div');
-                        faceItem.className = 'face-item success';
-                        faceItem.textContent = `✓ ${personName}`;
-                        faceList.appendChild(faceItem);
-                    } else {
-                        const faceItem = document.createElement('div');
-                        faceItem.className = 'face-item error';
-                        faceItem.textContent = `✗ ${personName} - Không tìm thấy khuôn mặt`;
-                        faceList.appendChild(faceItem);
+                        loadedCount++;
                     }
                 } catch (error) {
-                    const faceItem = document.createElement('div');
-                    faceItem.className = 'face-item error';
-                    faceItem.textContent = `✗ ${personName} - Lỗi xử lý`;
-                    faceList.appendChild(faceItem);
+                    console.warn(`Không thể tải ảnh cho ${personName}:`, error);
                 }
+            }
+
+            console.log(`Đã tải ${loadedCount} khuôn mặt từ ${peopleNames.length} người`);
+            
+            if (loadedCount === 0) {
+                throw new Error('Không tải được ảnh nào. Kiểm tra thư mục data/face/');
             }
         }
 
-        // Load image from file
-        function loadImageFromFile(file) {
+        // Load image from URL
+        function loadImageFromUrl(url) {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = event.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error(`Không thể tải ảnh: ${url}`));
+                img.src = url;
             });
         }
 
@@ -568,22 +457,6 @@
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                 faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
             ]);
-        }
-
-        // Load Google Sheets data
-        async function loadGoogleSheetsData(sheetId, apiKey) {
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:B?key=${apiKey}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.values) {
-                peopleData = {};
-                data.values.slice(1).forEach(row => {
-                    if (row[0] && row[1]) {
-                        peopleData[row[0]] = row[1];
-                    }
-                });
-            }
         }
 
         // Toggle camera
@@ -598,13 +471,19 @@
         // Start camera
         async function startCamera() {
             if (!isModelLoaded) {
-                showStatus('Vui lòng cài đặt trước!', 'error');
+                showStatus('Hệ thống chưa sẵn sàng!', 'error');
                 return;
             }
 
             try {
                 const video = document.getElementById('video');
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 640 }
+                    } 
+                });
                 video.srcObject = stream;
 
                 video.addEventListener('loadedmetadata', () => {
@@ -616,7 +495,7 @@
                     document.getElementById('placeholder').style.display = 'none';
                     
                     isVideoStarted = true;
-                    document.getElementById('startBtn').textContent = '⏹️ Dừng';
+                    document.getElementById('cameraBtn').textContent = '⏹️';
                     
                     recognizeFaces();
                 });
@@ -639,7 +518,7 @@
             document.getElementById('placeholder').style.display = 'flex';
 
             isVideoStarted = false;
-            document.getElementById('startBtn').textContent = '🚀 Bắt đầu';
+            document.getElementById('cameraBtn').textContent = '📷';
             document.getElementById('resultDisplay').innerHTML = '<div style="opacity: 0.5;">Hướng camera vào khuôn mặt để nhận diện</div>';
 
             const canvas = document.getElementById('canvas');
@@ -672,18 +551,19 @@
 
                         // Draw bounding box
                         ctx.strokeStyle = result.distance < 0.6 ? '#667eea' : 'rgba(255, 255, 255, 0.5)';
-                        ctx.lineWidth = 2;
+                        ctx.lineWidth = 3;
                         ctx.strokeRect(box.x, box.y, box.width, box.height);
 
                         // Show result
                         if (result.distance < 0.6) {
                             const personName = result.label;
-                            const additionalInfo = peopleData[personName] || '';
+                            const personInfo = peopleData[personName];
                             const confidence = Math.round((1 - result.distance) * 100);
+                            const todaySchedule = getTodaySchedule(personInfo);
                             
                             document.getElementById('resultDisplay').innerHTML = `
                                 <div class="person-name">${personName}</div>
-                                <div class="person-info">${additionalInfo}</div>
+                                <div class="person-schedule">${todaySchedule}</div>
                                 <div class="confidence">${confidence}% tin cậy</div>
                             `;
                         } else {
@@ -705,19 +585,65 @@
             setTimeout(recognizeFaces, 100);
         }
 
+        // Get today's schedule
+        function getTodaySchedule(personInfo) {
+            if (!personInfo) return 'Không có thông tin';
+            
+            const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const scheduleMap = {
+                1: personInfo.monday,
+                2: personInfo.tuesday,
+                3: personInfo.wednesday,
+                4: personInfo.thursday,
+                5: personInfo.friday
+            };
+            
+            return scheduleMap[today] || 'Không làm việc hôm nay';
+        }
+
+        // Search person (Desktop)
+        function searchPerson() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (!searchTerm) {
+                showStatus('Vui lòng nhập tên!', 'error');
+                return;
+            }
+
+            const personInfo = peopleData[searchTerm];
+            if (personInfo) {
+                const todaySchedule = getTodaySchedule(personInfo);
+                document.getElementById('searchResult').innerHTML = `
+                    <div class="person-name">${personInfo.name}</div>
+                    <div class="person-schedule">${todaySchedule}</div>
+                    <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                        <strong>Lịch tuần:</strong><br>
+                        Thứ 2: ${personInfo.monday || 'Nghỉ'}<br>
+                        Thứ 3: ${personInfo.tuesday || 'Nghỉ'}<br>
+                        Thứ 4: ${personInfo.wednesday || 'Nghỉ'}<br>
+                        Thứ 5: ${personInfo.thursday || 'Nghỉ'}<br>
+                        Thứ 6: ${personInfo.friday || 'Nghỉ'}
+                    </div>
+                `;
+            } else {
+                document.getElementById('searchResult').innerHTML = `
+                    <div style="opacity: 0.5; color: #dc3545;">Không tìm thấy người này</div>
+                `;
+            }
+        }
+
+        // Handle Enter key in search
+        document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPerson();
+            }
+        });
+
         // Show status
         function showStatus(message, type) {
             const statusEl = document.getElementById('status');
             statusEl.textContent = message;
             statusEl.className = `status ${type}`;
         }
-
-        // Close settings when clicking outside
-        document.getElementById('settingsPopup').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSettings();
-            }
-        });
     </script>
 </body>
 </html>

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Recognition App</title>
+    <title>InBold Face Recognition</title>
 
     <!-- 1. Tải các thư viện cần thiết -->
-    <!-- Thư viện xử lý file Excel -->
+    <!-- Thư viện xử lý file Excel từ CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- Thư viện face-api.js -->
-    <script defer src="./face-api.min.js"></script>
+    <!-- ĐÃ SỬA: Tải thư viện face-api.js từ CDN thay vì file local không tồn tại -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <!-- 2. CSS cho giao diện -->
     <style>
@@ -37,7 +37,6 @@
             font-weight: bold;
         }
 
-        /* Vòng tròn camera */
         .camera-view {
             position: relative;
             width: 300px;
@@ -54,14 +53,13 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scaleX(-1); /* Lật ngược camera cho giống gương */
+            transform: translate(-50%, -50%) scaleX(-1);
             min-width: 100%;
             min-height: 100%;
             width: auto;
             height: auto;
         }
 
-        /* Ô nhập liệu cho desktop */
         #desktop-container {
             margin: 40px auto;
         }
@@ -76,7 +74,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        /* Vùng thông tin */
         #info-container {
             margin-top: 30px;
         }
@@ -103,20 +100,14 @@
     <!-- 3. HTML cho cấu trúc ứng dụng -->
     <div class="app-container">
         <div id="loader">Đang tải model và dữ liệu...</div>
-
-        <!-- Chế độ mobile: Hiển thị camera -->
         <div id="camera-container" class="hidden">
             <div class="camera-view">
                 <video id="video" width="720" height="560" autoplay muted playsinline></video>
             </div>
         </div>
-
-        <!-- Chế độ desktop: Ô nhập liệu -->
         <div id="desktop-container" class="hidden">
             <input type="text" id="name-input" placeholder="Nhập tên và nhấn Enter...">
         </div>
-
-        <!-- Vùng hiển thị thông tin -->
         <div id="info-container">
             <h2 id="user-name">...</h2>
             <p id="user-info">Vui lòng hướng camera vào khuôn mặt hoặc nhập tên</p>
@@ -125,167 +116,149 @@
 
     <!-- 4. JavaScript cho logic ứng dụng -->
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // DOM Elements
-        const video = document.getElementById('video');
-        const loader = document.getElementById('loader');
-        const cameraContainer = document.getElementById('camera-container');
-        const desktopContainer = document.getElementById('desktop-container');
-        const nameInput = document.getElementById('name-input');
-        const userNameDisplay = document.getElementById('user-name');
-        const userInfoDisplay = document.getElementById('user-info');
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('video');
+            const loader = document.getElementById('loader');
+            const cameraContainer = document.getElementById('camera-container');
+            const desktopContainer = document.getElementById('desktop-container');
+            const nameInput = document.getElementById('name-input');
+            const userNameDisplay = document.getElementById('user-name');
+            const userInfoDisplay = document.getElementById('user-info');
 
-        let allUsersData = [];
-        // Đường dẫn tương đối đến thư mục chứa model (ĐÃ SỬA)
-        const MODEL_URL = 'models'; 
+            let allUsersData = [];
+            // ĐÃ SỬA: Đường dẫn tương đối đúng cho GitHub Pages
+            const MODEL_URL = 'models';
 
-        // Tải các model cần thiết của face-api.js
-        async function loadModels() {
-            try {
-                await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-                ]);
-            } catch (error) {
-                console.error("Lỗi khi tải model của face-api:", error);
-                loader.innerText = 'Lỗi: Không thể tải model. Vui lòng kiểm tra lại thư mục models.';
-                throw error;
-            }
-        }
-
-        // Tải và xử lý dữ liệu từ file Excel
-        async function loadUserDataFromExcel() {
-            try {
-                // ĐÃ SỬA
-                const response = await fetch('data/InBold.xlsx');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                allUsersData = XLSX.utils.sheet_to_json(worksheet);
-                
-                if(allUsersData.length === 0) {
-                    throw new Error("File Excel không có dữ liệu hoặc sai định dạng.");
+            async function loadModels() {
+                try {
+                    await Promise.all([
+                        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                    ]);
+                } catch (error) {
+                    console.error("Lỗi khi tải model của face-api:", error);
+                    loader.innerText = 'Lỗi: Không thể tải model. Vui lòng kiểm tra lại thư mục models.';
+                    throw error;
                 }
-            } catch (error) {
-                console.error('Lỗi khi tải hoặc xử lý file Excel:', error);
-                loader.innerText = 'Lỗi: Không thể tải file InBold.xlsx. Vui lòng kiểm tra lại đường dẫn và file.';
-                throw error;
             }
-        }
 
-        // Tạo "cơ sở dữ liệu" nhận diện khuôn mặt từ ảnh
-        async function createLabeledFaceDescriptors() {
-            if (!allUsersData || allUsersData.length === 0) return [];
-            loader.innerText = `Đang xử lý ${allUsersData.length} ảnh...`;
-            const labeledFaceDescriptors = await Promise.all(
-                allUsersData.map(async (user, index) => {
-                    const name = user['Họ tên']; 
-                    if (!name) return undefined;
-                    // ĐÃ SỬA
-                    const imgUrl = `data/face/${name}.jpg`;
-                    try {
-                        const img = await faceapi.fetchImage(imgUrl);
-                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                        if (detections) {
-                            loader.innerText = `Đang xử lý ảnh: ${index + 1}/${allUsersData.length}`;
-                            return new faceapi.LabeledFaceDescriptors(name, [detections.descriptor]);
-                        }
-                        return undefined;
-                    } catch (e) {
-                        console.warn(`Không thể xử lý ảnh cho: ${name}. Bỏ qua...`, e);
-                        return undefined;
+            async function loadUserDataFromExcel() {
+                try {
+                    // ĐÃ SỬA: Đường dẫn tương đối đúng cho GitHub Pages
+                    const response = await fetch('data/InBold.xlsx');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    allUsersData = XLSX.utils.sheet_to_json(worksheet);
+                    if (allUsersData.length === 0) {
+                        throw new Error("File Excel không có dữ liệu hoặc sai định dạng.");
                     }
-                })
-            );
-            return labeledFaceDescriptors.filter(d => d !== undefined);
-        }
-
-        // Khởi động camera
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: {} })
-                .then(stream => { video.srcObject = stream; })
-                .catch(err => {
-                    console.error('Lỗi truy cập camera:', err);
-                    loader.innerText = 'Lỗi! Không thể truy cập camera. Vui lòng cấp quyền và tải lại trang.';
-                });
-        }
-
-        // Hàm hiển thị thông tin người dùng
-        function displayUserInfo(name) {
-            const user = allUsersData.find(u => u['Họ tên'] && u['Họ tên'].toLowerCase() === name.toLowerCase());
-            if (user) {
-                const today = new Date().getDay(); // 0: CN, 1: T2, ..., 6: T7
-                const dayMapping = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-                const currentDayKey = (today >= 1 && today <= 5) ? dayMapping[today] : 'Thứ 2';
-                userNameDisplay.innerText = user['Họ tên'];
-                userInfoDisplay.innerText = user[currentDayKey] || 'Không có thông tin cho ngày hôm nay.';
-            } else {
-                userNameDisplay.innerText = 'Không nhận diện được';
-                userInfoDisplay.innerText = 'Vui lòng giữ khuôn mặt ổn định trong khung hình.';
+                } catch (error) {
+                    console.error('Lỗi khi tải hoặc xử lý file Excel:', error);
+                    loader.innerText = 'Lỗi: Không thể tải file InBold.xlsx.';
+                    throw error;
+                }
             }
-        }
 
-        // Hàm chính để chạy ứng dụng
-        async function run() {
-            try {
-                await Promise.all([loadModels(), loadUserDataFromExcel()]);
-                
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-                if (isMobile) {
-                    // --- Chế độ Mobile ---
-                    cameraContainer.classList.remove('hidden');
-                    startCamera();
-                    
-                    const labeledFaceDescriptors = await createLabeledFaceDescriptors();
-                    if (labeledFaceDescriptors.length === 0) {
-                        loader.innerText = "Lỗi: Không có dữ liệu khuôn mặt nào được xử lý.";
-                        return;
-                    }
-                    
-                    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
-                    loader.classList.add('hidden');
-
-                    video.addEventListener('play', () => {
-                        let isDetecting = false;
-                        setInterval(async () => {
-                            if (isDetecting) return;
-                            isDetecting = true;
-                            try {
-                                const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-                                if (detection) {
-                                    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-                                    displayUserInfo(bestMatch.label);
-                                }
-                            } finally {
-                                isDetecting = false;
+            async function createLabeledFaceDescriptors() {
+                if (!allUsersData || allUsersData.length === 0) return [];
+                loader.innerText = `Đang xử lý ${allUsersData.length} ảnh...`;
+                const labeledFaceDescriptors = await Promise.all(
+                    allUsersData.map(async (user, index) => {
+                        const name = user['Họ tên'];
+                        if (!name) return undefined;
+                        // ĐÃ SỬA: Đường dẫn tương đối đúng cho GitHub Pages
+                        const imgUrl = `data/face/${name}.jpg`;
+                        try {
+                            const img = await faceapi.fetchImage(imgUrl);
+                            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                            if (detections) {
+                                loader.innerText = `Đang xử lý ảnh: ${index + 1}/${allUsersData.length}`;
+                                return new faceapi.LabeledFaceDescriptors(name, [detections.descriptor]);
                             }
-                        }, 700);
-                    });
-                } else {
-                    // --- Chế độ Desktop ---
-                    desktopContainer.classList.remove('hidden');
-                    loader.classList.add('hidden');
-
-                    nameInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            const name = nameInput.value.trim();
-                            if (name) displayUserInfo(name);
+                            return undefined;
+                        } catch (e) {
+                            console.warn(`Không thể xử lý ảnh cho: ${name}. Bỏ qua...`, e);
+                            return undefined;
                         }
-                    });
-                }
-            } catch (error) {
-                console.error("Đã có lỗi nghiêm trọng xảy ra khi khởi tạo ứng dụng.", error);
+                    })
+                );
+                return labeledFaceDescriptors.filter(d => d !== undefined);
             }
-        }
 
-        // Bắt đầu chạy
-        run();
-    });
-</script>
+            function startCamera() {
+                navigator.mediaDevices.getUserMedia({ video: {} })
+                    .then(stream => { video.srcObject = stream; })
+                    .catch(err => {
+                        console.error('Lỗi truy cập camera:', err);
+                        loader.innerText = 'Lỗi! Không thể truy cập camera. Vui lòng cấp quyền và tải lại trang.';
+                    });
+            }
+
+            function displayUserInfo(name) {
+                const user = allUsersData.find(u => u['Họ tên'] && u['Họ tên'].toLowerCase() === name.toLowerCase());
+                if (user) {
+                    const today = new Date().getDay();
+                    const dayMapping = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const currentDayKey = (today >= 1 && today <= 5) ? dayMapping[today] : 'Thứ 2';
+                    userNameDisplay.innerText = user['Họ tên'];
+                    userInfoDisplay.innerText = user[currentDayKey] || 'Không có thông tin cho ngày hôm nay.';
+                } else {
+                    userNameDisplay.innerText = 'Không nhận diện được';
+                    userInfoDisplay.innerText = 'Vui lòng giữ khuôn mặt ổn định trong khung hình.';
+                }
+            }
+
+            async function run() {
+                try {
+                    await Promise.all([loadModels(), loadUserDataFromExcel()]);
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    if (isMobile) {
+                        cameraContainer.classList.remove('hidden');
+                        startCamera();
+                        const labeledFaceDescriptors = await createLabeledFaceDescriptors();
+                        if (labeledFaceDescriptors.length === 0) {
+                            loader.innerText = "Lỗi: Không có dữ liệu khuôn mặt nào được xử lý.";
+                            return;
+                        }
+                        const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
+                        loader.classList.add('hidden');
+                        video.addEventListener('play', () => {
+                            let isDetecting = false;
+                            setInterval(async () => {
+                                if (isDetecting) return;
+                                isDetecting = true;
+                                try {
+                                    const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                                    if (detection) {
+                                        const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                                        displayUserInfo(bestMatch.label);
+                                    }
+                                } finally {
+                                    isDetecting = false;
+                                }
+                            }, 700);
+                        });
+                    } else {
+                        desktopContainer.classList.remove('hidden');
+                        loader.classList.add('hidden');
+                        nameInput.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') {
+                                const name = nameInput.value.trim();
+                                if (name) displayUserInfo(name);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("Đã có lỗi nghiêm trọng xảy ra khi khởi tạo ứng dụng.", error);
+                }
+            }
+
+            run();
+        });
+    </script>
 </body>
 </html>

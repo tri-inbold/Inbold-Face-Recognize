@@ -163,12 +163,32 @@
                 
                 const labeledFaceDescriptors = [];
                 
+                // Tìm tên cột chứa họ tên (flexible)
+                let nameColumn = null;
+                if (allUsersData.length > 0) {
+                    const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name', 'Họ và tên'];
+                    for (const col of possibleColumns) {
+                        if (allUsersData[0].hasOwnProperty(col)) {
+                            nameColumn = col;
+                            addDebugMessage(`✅ Tìm thấy cột tên: "${nameColumn}"`);
+                            break;
+                        }
+                    }
+                    // Nếu không tìm thấy, lấy cột đầu tiên
+                    if (!nameColumn) {
+                        const firstKey = Object.keys(allUsersData[0])[0];
+                        nameColumn = firstKey;
+                        addDebugMessage(`⚠️ Không tìm thấy cột tên chuẩn, sử dụng cột: "${firstKey}"`);
+                    }
+                }
+                
                 for (let index = 0; index < allUsersData.length; index++) {
                     const user = allUsersData[index];
-                    const nameWithDiacritics = user['Họ tên'];
+                    const nameWithDiacritics = user[nameColumn];
                     
-                    if (!nameWithDiacritics) {
-                        addDebugMessage(`⚠️ Bỏ qua dòng ${index + 1}: Không có tên`);
+                    if (!nameWithDiacritics || nameWithDiacritics.toString().trim() === '') {
+                        addDebugMessage(`⚠️ Bỏ qua dòng ${index + 1}: Không có tên (giá trị: "${nameWithDiacritics}")`);
+                        addDebugMessage(`   Dữ liệu dòng: ${JSON.stringify(user)}`);
                         continue;
                     }
 
@@ -222,14 +242,29 @@
             }
 
             function displayUserInfo(name) {
-                const user = allUsersData.find(u => u['Họ tên'] && u['Họ tên'].toLowerCase() === name.toLowerCase());
+                // Tìm kiếm linh hoạt với tên cột
+                let nameColumn = 'Tên';
+                if (allUsersData.length > 0) {
+                    const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name', 'Họ và tên'];
+                    for (const col of possibleColumns) {
+                        if (allUsersData[0].hasOwnProperty(col)) {
+                            nameColumn = col;
+                            break;
+                        }
+                    }
+                    if (!nameColumn) {
+                        nameColumn = Object.keys(allUsersData[0])[0];
+                    }
+                }
+                
+                const user = allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
                 if (user) {
                     const today = new Date().getDay();
-                    const dayMapping = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-                    const currentDayKey = (today >= 1 && today <= 5) ? dayMapping[today] : 'Thứ 2';
-                    userNameDisplay.innerText = user['Họ tên'];
+                    const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ 7'];
+                    const currentDayKey = (today >= 2 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                    userNameDisplay.innerText = user[nameColumn];
                     userInfoDisplay.innerText = user[currentDayKey] || 'Không có thông tin cho ngày hôm nay.';
-                    addDebugMessage(`Hiển thị thông tin cho: ${user['Họ tên']}`);
+                    addDebugMessage(`Hiển thị thông tin cho: ${user[nameColumn]}`);
                 } else {
                     userNameDisplay.innerText = 'Không nhận diện được';
                     userInfoDisplay.innerText = 'Vui lòng giữ khuôn mặt ổn định trong khung hình.';
@@ -284,12 +319,29 @@
                             if (e.key === 'Enter') {
                                 const name = nameInput.value.trim();
                                 if (name) {
+                                    // Tìm tên cột
+                                    let nameColumn = 'Tên';
+                                    if (allUsersData.length > 0) {
+                                        const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name', 'Họ và tên'];
+                                        for (const col of possibleColumns) {
+                                            if (allUsersData[0].hasOwnProperty(col)) {
+                                                nameColumn = col;
+                                                break;
+                                            }
+                                        }
+                                        if (!nameColumn) {
+                                            nameColumn = Object.keys(allUsersData[0])[0];
+                                        }
+                                    }
+                                    
                                     const userFound = allUsersData.find(u => 
-                                        u['Họ tên'].toLowerCase() === name.toLowerCase() || 
-                                        removeDiacritics(u['Họ tên']).toLowerCase() === name.toLowerCase()
+                                        u[nameColumn] && (
+                                            u[nameColumn].toLowerCase() === name.toLowerCase() || 
+                                            removeDiacritics(u[nameColumn]).toLowerCase() === name.toLowerCase()
+                                        )
                                     );
                                     if (userFound) {
-                                        displayUserInfo(userFound['Họ tên']);
+                                        displayUserInfo(userFound[nameColumn]);
                                     } else {
                                         userNameDisplay.innerText = 'Không tìm thấy';
                                         userInfoDisplay.innerText = 'Vui lòng kiểm tra lại tên đã nhập.';

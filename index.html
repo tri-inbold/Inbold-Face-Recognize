@@ -17,11 +17,26 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #334155;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            z-index: -1;
         }
         
         .app-container {
@@ -37,30 +52,39 @@
         /* Toggle Header */
         .toggle-header {
             display: flex;
-            background: #e2e8f0;
-            border-radius: 12px;
-            padding: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 6px;
             margin-bottom: 40px;
             align-self: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .toggle-button {
-            padding: 12px 24px;
+            padding: 14px 28px;
             background: transparent;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
-            font-weight: 500;
-            color: #64748b;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             min-width: 120px;
         }
         
         .toggle-button.active {
-            background: #ffffff;
-            color: #334155;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            color: #4c1d95;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .toggle-button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.95);
         }
         
         /* Face Detection Mode */
@@ -75,34 +99,38 @@
         }
         
         .camera-circle {
-            width: 490px;
-            height: 490px;
+            width: 320px;
+            height: 320px;
             border-radius: 50%;
-            background: #ffffff;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             user-select: none;
-            border: 4px solid #e2e8f0;
-            margin-bottom: -50px;
+            border: 6px solid rgba(255, 255, 255, 0.3);
         }
         
         .camera-circle:hover {
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
         }
         
         .camera-circle.detecting {
-            border-color: #f59e0b;
+            border-color: #fbbf24;
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3);
         }
         
         .camera-circle.found {
             border-color: #10b981;
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
         }
         
         .camera-circle.not-found {
             border-color: #ef4444;
+            box-shadow: 0 20px 40px rgba(239, 68, 68, 0.3);
         }
         
         .camera-circle.capturing {
@@ -152,23 +180,29 @@
         }
         
         .user-name {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 15px;
-            min-height: 40px;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            min-height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .user-info {
             font-size: 18px;
-            color: #64748b;
-            background: #ffffff;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
             padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             min-height: 60px;
             display: flex;
             align-items: center;
@@ -186,22 +220,25 @@
             width: 100%;
             padding: 18px 25px;
             font-size: 18px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            background: #ffffff;
-            color: #334155;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
             text-align: center;
             outline: none;
             font-weight: 500;
-            transition: border-color 0.2s ease;
+            transition: all 0.3s ease;
         }
         
         #name-input::placeholder {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         #name-input:focus {
-            border-color: #3b82f6;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .suggestions-dropdown {
@@ -211,13 +248,14 @@
             right: 0;
             max-height: 300px;
             overflow-y: auto;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             margin-top: 8px;
             z-index: 20;
             display: none;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .suggestion-item {
@@ -225,8 +263,8 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 16px;
-            color: #334155;
-            border-bottom: 1px solid #f1f5f9;
+            color: #4c1d95;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .suggestion-item:last-child {
@@ -235,8 +273,8 @@
         
         .suggestion-item:hover,
         .suggestion-item.highlighted {
-            background: #f8fafc;
-            color: #3b82f6;
+            background: rgba(102, 126, 234, 0.1);
+            color: #3730a3;
         }
         
         /* About Mode */
@@ -245,6 +283,7 @@
             display: none;
             align-items: center;
             justify-content: center;
+            padding: 40px 20px;
         }
         
         .about-mode.active {
@@ -252,16 +291,19 @@
         }
         
         .about-container {
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 40px;
-            max-width: 600px;
+            max-width: 500px;
             width: 100%;
+            transform: translateY(-20px);
         }
         
         .about-section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         
         .about-section:last-child {
@@ -269,10 +311,13 @@
         }
         
         .about-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
         }
         
         .about-list {
@@ -281,25 +326,26 @@
         }
         
         .about-list li {
-            padding: 8px 0;
-            color: #64748b;
-            font-size: 16px;
+            padding: 6px 0;
+            color: #475569;
+            font-size: 15px;
             position: relative;
-            padding-left: 25px;
+            padding-left: 20px;
+            line-height: 1.5;
         }
         
         .about-list li:before {
             content: "•";
-            color: #3b82f6;
+            color: #667eea;
             font-weight: bold;
             position: absolute;
             left: 0;
         }
         
         .about-contact {
-            color: #3b82f6;
-            font-size: 18px;
-            font-weight: 500;
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
         }
         
         /* Menu Mode */
@@ -422,12 +468,12 @@
             }
             
             .camera-circle {
-                width: 500px;
-                height: 500px;
+                width: 280px;
+                height: 280px;
             }
             
             .user-name {
-                font-size: 28px;
+                font-size: 30px;
             }
             
             .user-info {
@@ -442,29 +488,35 @@
             
             .toggle-button {
                 font-size: 14px;
-                padding: 10px 20px;
+                padding: 12px 22px;
                 min-width: 100px;
             }
             
             .menu-table th,
             .menu-table td {
-                padding: 12px 15px;
+                padding: 14px 18px;
                 font-size: 14px;
             }
             
             .about-container {
                 padding: 30px 25px;
+                max-width: 90%;
+            }
+            
+            .menu-search input {
+                font-size: 15px;
+                padding: 16px 20px;
             }
         }
         
         @media (max-width: 480px) {
             .camera-circle {
-                width: 380px;
-                height: 380px;
+                width: 250px;
+                height: 250px;
             }
             
             .user-name {
-                font-size: 24px;
+                font-size: 26px;
             }
             
             .user-info {
@@ -474,12 +526,23 @@
             
             .toggle-button {
                 font-size: 13px;
-                padding: 8px 16px;
-                min-width: 70px;
+                padding: 10px 18px;
+                min-width: 80px;
             }
             
             .about-container {
                 padding: 25px 20px;
+            }
+            
+            .menu-search input {
+                font-size: 14px;
+                padding: 14px 18px;
+            }
+            
+            .menu-table th,
+            .menu-table td {
+                padding: 12px 15px;
+                font-size: 13px;
             }
         }
     </style>
@@ -572,13 +635,14 @@
                 this.userInfoDisplay = document.getElementById('user-info');
                 
                 // Toggle elements
-                this.aboutTab = document.getElementById('about-tab');
-                this.faceDetectTab = document.getElementById('face-detect-tab');
                 this.menuTab = document.getElementById('menu-tab');
-                this.aboutMode = document.getElementById('about-mode');
-                this.faceDetectMode = document.getElementById('face-detect-mode');
+                this.faceDetectTab = document.getElementById('face-detect-tab');
+                this.aboutTab = document.getElementById('about-tab');
                 this.menuMode = document.getElementById('menu-mode');
+                this.faceDetectMode = document.getElementById('face-detect-mode');
+                this.aboutMode = document.getElementById('about-mode');
                 this.menuTable = document.getElementById('menu-table');
+                this.menuSearchInput = document.getElementById('menu-search-input');
                 
                 this.allUsersData = [];
                 this.labeledFaceDescriptors = [];
@@ -590,6 +654,8 @@
                 this.filteredSuggestions = [];
                 this.selectedSuggestionIndex = -1;
                 this.currentMode = 'face-detect';
+                this.allMenuData = []; // Store original data for filtering
+                this.filteredMenuData = []; // Store filtered data
                 
                 this.MODEL_URL = 'models';
                 
@@ -599,9 +665,12 @@
             
             initEventListeners() {
                 // Toggle tabs
-                this.aboutTab.addEventListener('click', () => this.switchMode('about'));
-                this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
                 this.menuTab.addEventListener('click', () => this.switchMode('menu'));
+                this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
+                this.aboutTab.addEventListener('click', () => this.switchMode('about'));
+                
+                // Menu search
+                this.menuSearchInput.addEventListener('input', (e) => this.handleMenuSearch(e));
                 
                 // Camera circle interactions
                 this.cameraCircle.addEventListener('click', () => this.toggleDetection());
@@ -622,36 +691,103 @@
                 this.currentMode = mode;
                 
                 // Update active tab
-                this.aboutTab.classList.toggle('active', mode === 'about');
-                this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
                 this.menuTab.classList.toggle('active', mode === 'menu');
+                this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
+                this.aboutTab.classList.toggle('active', mode === 'about');
                 
                 // Show/hide modes
-                this.aboutMode.classList.toggle('active', mode === 'about');
-                this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
                 this.menuMode.classList.toggle('active', mode === 'menu');
+                this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
+                this.aboutMode.classList.toggle('active', mode === 'about');
                 
                 if (mode === 'menu' && this.allUsersData.length > 0) {
+                    this.prepareMenuData();
                     this.renderMenuTable();
                 }
             }
             
-            renderMenuTable() {
-                if (this.allUsersData.length === 0) return;
-                
+            prepareMenuData() {
                 const nameColumn = this.findNameColumn();
                 const today = new Date().getDay();
                 const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
                 const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
                 
-                // Only show Name column and current day column
-                const columns = [nameColumn, currentDayKey];
+                // Store filtered data with only name and current day
+                this.allMenuData = this.allUsersData.map(user => ({
+                    [nameColumn]: user[nameColumn] || '',
+                    [currentDayKey]: user[currentDayKey] || ''
+                }));
+                
+                this.filteredMenuData = [...this.allMenuData];
+            }
+            
+            handleMenuSearch(e) {
+                const query = e.target.value.toLowerCase().trim();
+                const nameColumn = this.findNameColumn();
+                
+                if (query === '') {
+                    this.filteredMenuData = [...this.allMenuData];
+                } else {
+                    this.filteredMenuData = this.allMenuData.filter(user => {
+                        const name = user[nameColumn] || '';
+                        return name.toLowerCase().includes(query) || 
+                               this.removeDiacritics(name).toLowerCase().includes(query);
+                    });
+                }
+                
+                this.renderMenuTable();
+            }
+            
+            renderMenuTable() {
+                if (this.filteredMenuData.length === 0) {
+                    this.menuTable.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Tên</th>
+                                <th>Lịch trình</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: #94a3b8; padding: 40px; font-style: italic;">
+                                    ${this.menuSearchInput.value.trim() ? 'Không tìm thấy kết quả phù hợp' : 'Không có dữ liệu'}
+                                </td>
+                            </tr>
+                        </tbody>
+                    `;
+                    return;
+                }
+                
+                const columns = Object.keys(this.filteredMenuData[0]);
                 
                 // Create table header
                 const headerRow = columns.map(col => `<th>${col}</th>`).join('');
                 
                 // Create table rows
-                const bodyRows = this.allUsersData.map(user => {
+                const bodyRows = this.filteredMenuData.map(user => {
+                    const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                
+                this.menuTable.innerHTML = `
+                    <thead>
+                        <tr>${headerRow}</tr>
+                    </thead>
+                    <tbody>
+                        ${bodyRows}
+                    </tbody>
+                `;
+            }94a3b8; padding: 40px;">Không tìm thấy dữ liệu</td></tr>';
+                    return;
+                }
+                
+                const columns = Object.keys(this.filteredMenuData[0]);
+                
+                // Create table header
+                const headerRow = columns.map(col => `<th>${col}</th>`).join('');
+                
+                // Create table rows
+                const bodyRows = this.filteredMenuData.map(user => {
                     const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
                     return `<tr>${cells}</tr>`;
                 }).join('');

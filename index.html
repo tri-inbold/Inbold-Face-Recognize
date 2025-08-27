@@ -9,701 +9,227 @@
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f0f2f5; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
+        .app-container { padding: 20px; max-width: 90vw; }
+        #loader { font-size: 1.2em; font-weight: bold; }
+        .camera-view { position: relative; width: 300px; height: 300px; border-radius: 50%; overflow: hidden; margin: 20px auto; border: 5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #000; }
+        #video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scaleX(-1); min-width: 100%; min-height: 100%; width: auto; height: auto; }
+        #desktop-container { margin: 40px auto; }
+        #name-input { padding: 15px; font-size: 1.2em; width: 300px; border-radius: 30px; border: 1px solid #ccc; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        #info-container { margin-top: 20px; }
+        #user-name { font-size: 2em; margin-bottom: 10px; color: #0056b3; word-wrap: break-word; }
+        #user-info { font-size: 1.2em; min-height: 50px; word-wrap: break-word; }
+        .hidden { display: none !important; }
+        #snapshot-btn { 
+            display: block; margin: 20px auto 0; padding: 12px 25px; font-size: 1.1em; font-weight: bold; color: #fff; background-color: #007bff; border: none; border-radius: 25px; cursor: pointer; transition: background-color 0.2s;
         }
-        
-        .app-container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            max-width: 90vw;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-        
-        #loader {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-        
-        .camera-container {
-            position: relative;
-            margin: 20px auto;
-            display: inline-block;
-        }
-        
-        .camera-view {
-            width: 320px;
-            height: 240px;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 3px solid #667eea;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-            background: #000;
-            position: relative;
-        }
-        
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-        
-        #canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            transform: scaleX(-1);
-        }
-        
-        .controls {
-            margin: 20px 0;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #f8f9fa;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-        
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        #name-input {
-            padding: 15px 20px;
-            font-size: 16px;
-            width: 280px;
-            max-width: 90%;
-            border-radius: 25px;
-            border: 2px solid #ddd;
-            text-align: center;
-            margin: 10px;
-            transition: border-color 0.3s ease;
-        }
-        
-        #name-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
-        }
-        
-        .info-container {
-            margin-top: 30px;
-            padding: 25px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border-radius: 15px;
-            color: white;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        #user-name {
-            font-size: 2em;
-            margin-bottom: 10px;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        #user-info {
-            font-size: 1.2em;
-            font-weight: 500;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .status-detecting {
-            background: #ffd700;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-found {
-            background: #28a745;
-        }
-        
-        .status-not-found {
-            background: #dc3545;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        #debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            text-align: left;
-            max-height: 150px;
-            overflow-y: auto;
-            color: #495057;
-        }
-        
-        .debug-line {
-            margin: 2px 0;
-            padding: 2px 0;
-        }
-        
-        .mode-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            padding: 5px;
-        }
-        
-        @media (max-width: 768px) {
-            .app-container {
-                padding: 20px;
-                margin: 10px;
-            }
-            
-            .camera-view {
-                width: 280px;
-                height: 210px;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 200px;
-            }
-        }
+        #snapshot-btn:hover { background-color: #0056b3; }
+        #snapshot-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <div class="mode-toggle">
-            <button class="btn btn-secondary" id="toggle-mode">Desktop Mode</button>
-        </div>
+        <div id="loader">Đang tải model và dữ liệu...</div>
         
-        <h1 style="color: #667eea; margin-bottom: 20px;">🎭 InBold Face Recognition</h1>
-        
-        <div id="loader">
-            <div class="status-indicator status-detecting"></div>
-            Đang khởi tạo hệ thống...
-        </div>
-        
-        <div id="debug-info"></div>
-        
-        <!-- Mobile/Camera Mode -->
-        <div id="camera-mode" class="hidden">
-            <div class="camera-container">
-                <div class="camera-view">
-                    <video id="video" width="320" height="240" autoplay muted playsinline></video>
-                    <canvas id="canvas" width="320" height="240"></canvas>
-                </div>
+        <div id="camera-container" class="hidden">
+            <div class="camera-view">
+                <video id="video" width="720" height="560" autoplay muted playsinline></video>
+                <canvas id="snapshot-canvas" class="hidden"></canvas>
             </div>
-            
-            <div class="controls">
-                <button class="btn btn-primary" id="start-detection" disabled>
-                    <span class="status-indicator status-detecting"></span>
-                    Bắt đầu nhận diện
-                </button>
-                <button class="btn btn-secondary" id="stop-detection" disabled>
-                    Dừng nhận diện
-                </button>
-                <button class="btn btn-primary" id="capture-photo">
-                    📷 Chụp ảnh & So sánh
-                </button>
-            </div>
-            
-            <div>
-                <label>Độ nhạy nhận diện: </label>
-                <input type="range" id="threshold-slider" min="0.3" max="0.8" step="0.1" value="0.6">
-                <span id="threshold-value">0.6</span>
-            </div>
+            <button id="snapshot-btn">Chụp & Nhận diện</button>
         </div>
-        
-        <!-- Desktop Mode -->
-        <div id="desktop-mode" class="hidden">
-            <input type="text" id="name-input" placeholder="Nhập tên để tìm kiếm...">
-            <div class="controls">
-                <button class="btn btn-primary" id="search-name">🔍 Tìm kiếm</button>
-            </div>
+
+        <div id="desktop-container" class="hidden">
+            <input type="text" id="name-input" placeholder="Nhập tên và nhấn Enter...">
         </div>
-        
-        <!-- Results -->
-        <div class="info-container">
-            <h2 id="user-name">Chào mừng!</h2>
-            <p id="user-info">Hãy chọn chế độ nhận diện phù hợp</p>
+
+        <div id="info-container">
+            <h2 id="user-name">...</h2>
+            <p id="user-info">Vui lòng hướng camera vào khuôn mặt hoặc nhập tên</p>
         </div>
     </div>
 
     <script>
-        class FaceRecognitionApp {
-            constructor() {
-                this.video = document.getElementById('video');
-                this.canvas = document.getElementById('canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.loader = document.getElementById('loader');
-                this.debugInfo = document.getElementById('debug-info');
-                
-                this.allUsersData = [];
-                this.labeledFaceDescriptors = [];
-                this.faceMatcher = null;
-                this.isDetecting = false;
-                this.detectionInterval = null;
-                this.currentThreshold = 0.6;
-                this.isDesktopMode = false;
-                
-                this.MODEL_URL = 'models';
-                
-                this.initEventListeners();
-                this.init();
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('snapshot-canvas');
+            const snapshotBtn = document.getElementById('snapshot-btn');
+            const loader = document.getElementById('loader');
+            const cameraContainer = document.getElementById('camera-container');
+            const desktopContainer = document.getElementById('desktop-container');
+            const nameInput = document.getElementById('name-input');
+            const userNameDisplay = document.getElementById('user-name');
+            const userInfoDisplay = document.getElementById('user-info');
+
+            let allUsersData = [];
+            let faceMatcher = null;
+            const MODEL_URL = 'models';
+
+            function removeDiacritics(str) {
+                if (!str) return '';
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
             }
-            
-            initEventListeners() {
-                document.getElementById('toggle-mode').addEventListener('click', () => this.toggleMode());
-                document.getElementById('start-detection').addEventListener('click', () => this.startDetection());
-                document.getElementById('stop-detection').addEventListener('click', () => this.stopDetection());
-                document.getElementById('capture-photo').addEventListener('click', () => this.captureAndCompare());
-                document.getElementById('search-name').addEventListener('click', () => this.searchByName());
-                document.getElementById('name-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.searchByName();
-                });
-                
-                const thresholdSlider = document.getElementById('threshold-slider');
-                thresholdSlider.addEventListener('input', (e) => {
-                    this.currentThreshold = parseFloat(e.target.value);
-                    document.getElementById('threshold-value').textContent = this.currentThreshold;
-                });
-            }
-            
-            addDebugMessage(message, type = 'info') {
-                const timestamp = new Date().toLocaleTimeString();
-                const line = document.createElement('div');
-                line.className = 'debug-line';
-                line.innerHTML = `<strong>${timestamp}:</strong> ${message}`;
-                this.debugInfo.appendChild(line);
-                this.debugInfo.scrollTop = this.debugInfo.scrollHeight;
-                console.log(`[${timestamp}] ${message}`);
-            }
-            
-            updateLoader(message) {
-                this.loader.innerHTML = `
-                    <div class="status-indicator status-detecting"></div>
-                    ${message}
-                `;
-            }
-            
-            async init() {
-                try {
-                    this.updateLoader('Đang tải models...');
-                    await this.loadModels();
-                    
-                    this.updateLoader('Đang tải dữ liệu Excel...');
-                    await this.loadUserDataFromExcel();
-                    
-                    this.updateLoader('Đang xử lý ảnh nhận diện...');
-                    await this.createLabeledFaceDescriptors();
-                    
-                    if (this.labeledFaceDescriptors.length === 0) {
-                        throw new Error('Không có dữ liệu khuôn mặt nào được xử lý thành công');
-                    }
-                    
-                    this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
-                    
-                    // Kiểm tra thiết bị và chọn chế độ mặc định
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    
-                    if (isMobile) {
-                        await this.initCamera();
-                        this.showCameraMode();
-                    } else {
-                        this.showDesktopMode();
-                    }
-                    
-                    this.loader.classList.add('hidden');
-                    this.addDebugMessage('✅ Khởi tạo hoàn tất!');
-                    
-                } catch (error) {
-                    this.addDebugMessage(`❌ Lỗi khởi tạo: ${error.message}`, 'error');
-                    this.loader.innerHTML = `❌ Lỗi: ${error.message}`;
-                }
-            }
-            
-            async loadModels() {
+
+            async function loadModels() {
                 await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(this.MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(this.MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(this.MODEL_URL)
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                 ]);
-                this.addDebugMessage('✅ Tải models thành công');
             }
-            
-            async loadUserDataFromExcel() {
+
+            async function loadUserDataFromExcel() {
                 const response = await fetch('data/InBold.xlsx');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
                 const arrayBuffer = await response.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                this.allUsersData = XLSX.utils.sheet_to_json(worksheet);
-                
-                this.addDebugMessage(`✅ Tải Excel thành công: ${this.allUsersData.length} người dùng`);
-                
-                if (this.allUsersData.length > 0) {
-                    this.addDebugMessage(`Các cột: [${Object.keys(this.allUsersData[0]).join(', ')}]`);
-                }
+                allUsersData = XLSX.utils.sheet_to_json(worksheet);
+                if (allUsersData.length === 0) throw new Error("File Excel không có dữ liệu.");
             }
-            
-            async createLabeledFaceDescriptors() {
-                this.labeledFaceDescriptors = [];
-                
-                const nameColumn = this.findNameColumn();
-                if (!nameColumn) {
-                    throw new Error('Không tìm thấy cột tên trong Excel');
-                }
-                
-                for (let index = 0; index < this.allUsersData.length; index++) {
-                    const user = this.allUsersData[index];
-                    const name = user[nameColumn];
-                    
-                    if (!name || name.toString().trim() === '') continue;
-                    
-                    const imgUrl = `data/face/${this.removeDiacritics(name)}.jpg`;
-                    
+
+            async function createFaceMatcher() {
+                loader.innerText = `Đang xử lý ${allUsersData.length} ảnh...`;
+                const nameColumn = Object.keys(allUsersData[0])[0];
+                const labeledFaceDescriptors = [];
+                for (let index = 0; index < allUsersData.length; index++) {
+                    const user = allUsersData[index];
+                    const nameWithDiacritics = user[nameColumn];
+                    if (!nameWithDiacritics) continue;
+                    const nameWithoutDiacritics = removeDiacritics(nameWithDiacritics);
+                    const imgUrl = `data/face/${nameWithoutDiacritics}.jpg`;
                     try {
-                        this.updateLoader(`Xử lý ảnh ${index + 1}/${this.allUsersData.length}: ${name}`);
-                        
                         const img = await faceapi.fetchImage(imgUrl);
-                        const detections = await faceapi
-                            .detectSingleFace(img)
-                            .withFaceLandmarks()
-                            .withFaceDescriptor();
-                        
+                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                         if (detections) {
-                            this.labeledFaceDescriptors.push(
-                                new faceapi.LabeledFaceDescriptors(name, [detections.descriptor])
-                            );
-                            this.addDebugMessage(`✅ Xử lý thành công: ${name}`);
-                        } else {
-                            this.addDebugMessage(`⚠️ Không phát hiện khuôn mặt: ${name}`);
+                            labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(nameWithDiacritics, [detections.descriptor]));
                         }
-                        
-                    } catch (error) {
-                        this.addDebugMessage(`❌ Lỗi xử lý ${name}: ${error.message}`);
+                        loader.innerText = `Đang xử lý ảnh: ${index + 1}/${allUsersData.length}`;
+                    } catch (e) {
+                        console.error(`Lỗi tải hoặc xử lý ảnh ${imgUrl}:`, e);
                     }
                 }
-                
-                this.addDebugMessage(`🎉 Hoàn thành! ${this.labeledFaceDescriptors.length}/${this.allUsersData.length} ảnh đã xử lý`);
-            }
-            
-            findNameColumn() {
-                if (this.allUsersData.length === 0) return null;
-                
-                const possibleColumns = ['Tên', 'Họ tên', 'Ho ten', 'Name', 'Ten', 'Full Name'];
-                for (const col of possibleColumns) {
-                    if (this.allUsersData[0].hasOwnProperty(col)) {
-                        this.addDebugMessage(`✅ Sử dụng cột: "${col}"`);
-                        return col;
-                    }
-                }
-                
-                // Nếu không tìm thấy, lấy cột đầu tiên
-                const firstCol = Object.keys(this.allUsersData[0])[0];
-                this.addDebugMessage(`⚠️ Sử dụng cột đầu tiên: "${firstCol}"`);
-                return firstCol;
-            }
-            
-            removeDiacritics(str) {
-                if (!str) return '';
-                return str
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .replace(/đ/g, 'd')
-                    .replace(/Đ/g, 'D');
-            }
-            
-            async initCamera() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            facingMode: 'user',
-                            width: { ideal: 320 },
-                            height: { ideal: 240 }
-                        } 
-                    });
-                    this.video.srcObject = stream;
-                    this.addDebugMessage('✅ Camera khởi động thành công');
-                    
-                    return new Promise((resolve) => {
-                        this.video.addEventListener('loadedmetadata', () => {
-                            this.addDebugMessage('✅ Video metadata loaded');
-                            document.getElementById('start-detection').disabled = false;
-                            resolve();
-                        });
-                    });
-                } catch (error) {
-                    throw new Error(`Không thể truy cập camera: ${error.message}`);
+                if (labeledFaceDescriptors.length > 0) {
+                    faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
                 }
             }
-            
-            toggleMode() {
-                this.stopDetection();
-                this.isDesktopMode = !this.isDesktopMode;
-                
-                if (this.isDesktopMode) {
-                    this.showDesktopMode();
-                } else {
-                    this.showCameraMode();
-                }
+
+            function startCamera() {
+                navigator.mediaDevices.getUserMedia({ video: {} })
+                    .then(stream => { video.srcObject = stream; })
+                    .catch(err => { loader.innerText = 'Lỗi! Không thể truy cập camera.'; });
             }
-            
-            showCameraMode() {
-                document.getElementById('camera-mode').classList.remove('hidden');
-                document.getElementById('desktop-mode').classList.add('hidden');
-                document.getElementById('toggle-mode').textContent = 'Desktop Mode';
-                this.isDesktopMode = false;
-            }
-            
-            showDesktopMode() {
-                document.getElementById('camera-mode').classList.add('hidden');
-                document.getElementById('desktop-mode').classList.remove('hidden');
-                document.getElementById('toggle-mode').textContent = 'Camera Mode';
-                this.isDesktopMode = true;
-                this.stopDetection();
-            }
-            
-            async startDetection() {
-                if (this.isDetecting) return;
-                
-                this.isDetecting = true;
-                document.getElementById('start-detection').disabled = true;
-                document.getElementById('stop-detection').disabled = false;
-                
-                this.addDebugMessage('🚀 Bắt đầu nhận diện thời gian thực...');
-                
-                const detect = async () => {
-                    if (!this.isDetecting) return;
-                    
-                    try {
-                        const detections = await faceapi
-                            .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
-                            .withFaceLandmarks()
-                            .withFaceDescriptor();
-                        
-                        // Clear canvas
-                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                        
-                        if (detections) {
-                            // Vẽ khung phát hiện khuôn mặt
-                            const resizedDetections = faceapi.resizeResults(detections, {
-                                width: this.canvas.width,
-                                height: this.canvas.height
-                            });
-                            
-                            // Vẽ bounding box
-                            this.ctx.strokeStyle = '#00ff00';
-                            this.ctx.lineWidth = 2;
-                            const box = resizedDetections.detection.box;
-                            this.ctx.strokeRect(box.x, box.y, box.width, box.height);
-                            
-                            // So sánh với cơ sở dữ liệu
-                            const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
-                            
-                            this.addDebugMessage(`🎯 Match: ${bestMatch.label} (${bestMatch.distance.toFixed(3)})`);
-                            
-                            if (bestMatch.distance < this.currentThreshold) {
-                                this.displayUserInfo(bestMatch.label, 'found');
-                                
-                                // Vẽ tên lên canvas
-                                this.ctx.fillStyle = '#00ff00';
-                                this.ctx.font = '16px Arial';
-                                this.ctx.fillText(bestMatch.label, box.x, box.y - 10);
-                            } else {
-                                this.displayUserInfo('Không nhận diện được', 'not-found');
-                            }
-                        } else {
-                            this.displayUserInfo('Không phát hiện khuôn mặt', 'detecting');
-                        }
-                        
-                    } catch (error) {
-                        this.addDebugMessage(`❌ Lỗi detection: ${error.message}`);
-                    }
-                    
-                    // Tiếp tục detection
-                    if (this.isDetecting) {
-                        requestAnimationFrame(detect);
-                    }
-                };
-                
-                detect();
-            }
-            
-            stopDetection() {
-                this.isDetecting = false;
-                document.getElementById('start-detection').disabled = false;
-                document.getElementById('stop-detection').disabled = true;
-                
-                // Clear canvas
-                if (this.ctx) {
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                }
-                
-                this.addDebugMessage('⏹️ Dừng nhận diện');
-            }
-            
-            async captureAndCompare() {
-                if (!this.video.videoWidth) {
-                    alert('Camera chưa sẵn sàng!');
+
+            // =========================================================================
+            // ### HÀM ĐÃ ĐƯỢC NÂNG CẤP ###
+            // =========================================================================
+            function displayUserInfo(name) {
+                if (name === 'unknown') {
+                    userNameDisplay.innerText = 'Không nhận diện được';
+                    userInfoDisplay.innerText = 'Vui lòng thử lại hoặc đảm bảo ánh sáng tốt.';
                     return;
                 }
-                
-                try {
-                    this.addDebugMessage('📷 Chụp ảnh và so sánh...');
-                    
-                    // Capture frame from video
-                    const canvas = document.createElement('canvas');
-                    canvas.width = this.video.videoWidth;
-                    canvas.height = this.video.videoHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(this.video, 0, 0);
-                    
-                    // Detect face in captured image
-                    const detections = await faceapi
-                        .detectSingleFace(canvas)
-                        .withFaceLandmarks()
-                        .withFaceDescriptor();
-                    
-                    if (detections) {
-                        const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
-                        
-                        this.addDebugMessage(`📸 Kết quả chụp: ${bestMatch.label} (${bestMatch.distance.toFixed(3)})`);
-                        
-                        if (bestMatch.distance < this.currentThreshold) {
-                            this.displayUserInfo(bestMatch.label, 'found');
-                        } else {
-                            this.displayUserInfo('Không nhận diện được', 'not-found');
-                        }
-                    } else {
-                        this.addDebugMessage('❌ Không phát hiện khuôn mặt trong ảnh chụp');
-                        this.displayUserInfo('Không phát hiện khuôn mặt', 'not-found');
-                    }
-                    
-                } catch (error) {
-                    this.addDebugMessage(`❌ Lỗi chụp ảnh: ${error.message}`);
-                }
-            }
-            
-            searchByName() {
-                const name = document.getElementById('name-input').value.trim();
-                if (!name) return;
-                
-                this.addDebugMessage(`🔍 Tìm kiếm: ${name}`);
-                
-                const nameColumn = this.findNameColumn();
-                const user = this.allUsersData.find(u => 
-                    u[nameColumn] && (
-                        u[nameColumn].toLowerCase().includes(name.toLowerCase()) ||
-                        this.removeDiacritics(u[nameColumn]).toLowerCase().includes(name.toLowerCase())
-                    )
-                );
-                
-                if (user) {
-                    this.displayUserInfo(user[nameColumn], 'found');
-                } else {
-                    this.displayUserInfo('Không tìm thấy', 'not-found');
-                }
-            }
-            
-            displayUserInfo(name, status = 'found') {
-                const userNameDisplay = document.getElementById('user-name');
-                const userInfoDisplay = document.getElementById('user-info');
-                
-                if (name === 'Không nhận diện được' || name === 'Không tìm thấy' || name === 'Không phát hiện khuôn mặt') {
-                    userNameDisplay.innerHTML = `<span class="status-indicator status-${status}"></span>${name}`;
-                    userInfoDisplay.textContent = 'Vui lòng thử lại hoặc kiểm tra dữ liệu';
-                    return;
-                }
-                
-                const nameColumn = this.findNameColumn();
-                const user = this.allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
+
+                const nameColumn = Object.keys(allUsersData[0])[0];
+                const user = allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
                 
                 if (user) {
                     const today = new Date().getDay();
-                    const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ 7'];
-                    const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                    const dayMapping = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+                    const targetDayKey = (today >= 1 && today <= 5) ? dayMapping[today] : 'Thứ 2';
+
+                    // Logic tìm kiếm thông minh: Bỏ qua khoảng trắng
+                    let info = null;
+                    const normalizedTargetKey = targetDayKey.replace(/\s/g, ''); // Chuyển "Thứ 2" thành "Thứ2"
                     
-                    userNameDisplay.innerHTML = `<span class="status-indicator status-found"></span>${user[nameColumn]}`;
-                    userInfoDisplay.textContent = user[currentDayKey] || 'Không có lịch trình hôm nay';
-                } else {
-                    userNameDisplay.innerHTML = `<span class="status-indicator status-not-found"></span>Lỗi dữ liệu`;
-                    userInfoDisplay.textContent = 'Không tìm thấy thông tin trong cơ sở dữ liệu';
+                    for (const key in user) {
+                        if (Object.prototype.hasOwnProperty.call(user, key)) {
+                            const normalizedObjectKey = key.replace(/\s/g, ''); // Chuyển " Thứ 2 " thành "Thứ2"
+                            if (normalizedObjectKey === normalizedTargetKey) {
+                                info = user[key]; // Tìm thấy! Lấy giá trị
+                                break; // Dừng vòng lặp
+                            }
+                        }
+                    }
+
+                    userNameDisplay.innerText = user[nameColumn];
+                    userInfoDisplay.innerText = info || 'Không có thông tin cho ngày hôm nay.'; // Hiển thị giá trị hoặc thông báo lỗi
                 }
             }
-        }
-        
-        // Khởi động ứng dụng khi trang web load
-        document.addEventListener('DOMContentLoaded', () => {
-            new FaceRecognitionApp();
+            // =========================================================================
+
+            async function runRealtimeDetection() {
+                if (video.paused || video.ended) return;
+                const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                if (detection && faceMatcher) {
+                    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                    displayUserInfo(bestMatch.label);
+                }
+                setTimeout(() => runRealtimeDetection(), 1500);
+            }
+
+            async function runSnapshotDetection() {
+                if (!faceMatcher) return;
+                snapshotBtn.disabled = true;
+                snapshotBtn.innerText = 'Đang xử lý...';
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const detection = await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
+                if (detection) {
+                    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                    displayUserInfo(bestMatch.label);
+                } else {
+                    displayUserInfo('unknown');
+                }
+                snapshotBtn.disabled = false;
+                snapshotBtn.innerText = 'Chụp & Nhận diện';
+            }
+
+            async function main() {
+                try {
+                    await Promise.all([loadModels(), loadUserDataFromExcel()]);
+                    await createFaceMatcher();
+                    if (!faceMatcher) {
+                        loader.innerText = "Lỗi: Không thể khởi tạo bộ nhận diện.";
+                        return;
+                    }
+
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                        cameraContainer.classList.remove('hidden');
+                        loader.classList.add('hidden');
+                        startCamera();
+                        video.addEventListener('play', runRealtimeDetection);
+                        snapshotBtn.addEventListener('click', runSnapshotDetection);
+                    } else {
+                        desktopContainer.classList.remove('hidden');
+                        loader.classList.add('hidden');
+                        const nameColumn = Object.keys(allUsersData[0])[0];
+                        nameInput.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') {
+                                const name = nameInput.value.trim();
+                                if (name) {
+                                    const userFound = allUsersData.find(u => 
+                                        u[nameColumn] && (u[nameColumn].toLowerCase() === name.toLowerCase() || removeDiacritics(u[nameColumn]).toLowerCase() === name.toLowerCase())
+                                    );
+                                    if (userFound) {
+                                        displayUserInfo(userFound[nameColumn]);
+                                    } else {
+                                        userNameDisplay.innerText = 'Không tìm thấy';
+                                        userInfoDisplay.innerText = 'Vui lòng kiểm tra lại tên.';
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    loader.innerText = `Lỗi: ${error.message}`;
+                }
+            }
+            main();
         });
     </script>
 </body>

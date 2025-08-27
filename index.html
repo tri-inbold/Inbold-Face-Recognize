@@ -17,58 +17,84 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #e0e5ec 0%, #e0e5ec 100%);
-            color: #4a4a4a;
-            height: 100vh;
+            background: #f8fafc;
+            color: #334155;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            flex-direction: column;
         }
         
         .app-container {
-            width: 100vw;
-            height: 100vh;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* Toggle Header */
+        .toggle-header {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 40px;
+            align-self: center;
+        }
+        
+        .toggle-button {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+        
+        .toggle-button.active {
+            background: #ffffff;
+            color: #334155;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Face Detection Mode */
+        .face-detect-mode {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-        
-        .datetime {
-            font-size: 16px;
-            color: #6b7280;
-            margin-bottom: 30px;
-            font-weight: 500;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            gap: 30px;
+            margin-top: -60px; /* Move content up for balance */
         }
         
         .camera-circle {
-            width: 300px;
-            height: 300px;
+            width: 350px;
+            height: 350px;
             border-radius: 50%;
-            background: #e0e5ec;
-            box-shadow: 
-                20px 20px 60px #bebebe,
-                -20px -20px 60px #ffffff;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.3s ease;
             user-select: none;
+            border: 3px solid #e2e8f0;
         }
         
         .camera-circle:hover {
-            box-shadow: 
-                15px 15px 45px #bebebe,
-                -15px -15px 45px #ffffff;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
         }
         
         .camera-circle.active {
-            box-shadow: 
-                inset 15px 15px 30px #bebebe,
-                inset -15px -15px 30px #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.15);
         }
         
         .camera-circle.capturing {
@@ -95,7 +121,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #e0e5ec;
+            background: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -105,20 +131,23 @@
         
         .loading-text {
             font-size: 14px;
-            color: #6b7280;
+            color: #64748b;
             font-weight: 500;
             text-align: center;
             max-width: 200px;
             line-height: 1.4;
         }
         
+        .user-display {
+            text-align: center;
+            max-width: 500px;
+        }
+        
         .user-name {
             font-size: 32px;
             font-weight: 700;
-            color: #2d3748;
-            margin: 40px 0 15px 0;
-            text-align: center;
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            color: #1e293b;
+            margin-bottom: 15px;
             min-height: 40px;
             display: flex;
             align-items: center;
@@ -127,52 +156,44 @@
         
         .user-info {
             font-size: 18px;
-            color: #4a5568;
-            text-align: center;
-            font-weight: 500;
-            background: #e0e5ec;
-            padding: 15px 25px;
-            border-radius: 25px;
-            box-shadow: 
-                inset 8px 8px 16px #c8d0d7,
-                inset -8px -8px 16px #f8ffff;
-            min-height: 50px;
+            color: #64748b;
+            background: #ffffff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        /* Desktop Name Input */
+        .name-input-container {
+            position: relative;
+            width: 100%;
             max-width: 400px;
         }
         
-        /* Desktop Mode Styles */
-        .name-input-container {
-            position: relative;
-            margin-bottom: 30px;
-        }
-        
         #name-input {
-            width: 350px;
+            width: 100%;
             padding: 18px 25px;
             font-size: 18px;
-            border: none;
-            border-radius: 25px;
-            background: #e0e5ec;
-            box-shadow: 
-                inset 8px 8px 16px #c8d0d7,
-                inset -8px -8px 16px #f8ffff;
-            color: #4a4a4a;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #334155;
             text-align: center;
             outline: none;
             font-weight: 500;
+            transition: border-color 0.2s ease;
         }
         
         #name-input::placeholder {
-            color: #9ca3af;
+            color: #94a3b8;
         }
         
         #name-input:focus {
-            box-shadow: 
-                inset 10px 10px 20px #c8d0d7,
-                inset -10px -10px 20px #f8ffff;
+            border-color: #3b82f6;
         }
         
         .suggestions-dropdown {
@@ -180,71 +201,130 @@
             top: 100%;
             left: 0;
             right: 0;
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
-            background: #e0e5ec;
-            border-radius: 15px;
-            box-shadow: 
-                8px 8px 16px #c8d0d7,
-                -8px -8px 16px #f8ffff;
-            margin-top: 5px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
             z-index: 20;
             display: none;
+            border: 1px solid #e2e8f0;
         }
         
         .suggestion-item {
-            padding: 12px 20px;
+            padding: 15px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 16px;
-            color: #4a4a4a;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
         }
         
         .suggestion-item:hover,
         .suggestion-item.highlighted {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                inset 4px 4px 8px #c8d0d7,
-                inset -4px -4px 8px #f8ffff;
+            background: #f8fafc;
+            color: #3b82f6;
         }
         
-        .suggestion-item:first-child {
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
+        /* Menu Mode */
+        .menu-mode {
+            flex: 1;
+            display: none;
         }
         
-        .suggestion-item:last-child {
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
+        .menu-mode.active {
+            display: block;
         }
         
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
+        .menu-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            height: calc(100vh - 150px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .menu-header {
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .menu-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .menu-subtitle {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .menu-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .menu-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .menu-table th {
+            background: #f8fafc;
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        
+        .menu-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        
+        .menu-table tr:hover {
+            background: #fafafa;
+        }
+        
+        .status-indicator {
             display: inline-block;
-            margin-right: 10px;
-            box-shadow: 
-                2px 2px 4px #c8d0d7,
-                -2px -2px 4px #f8ffff;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
         
         .status-detecting {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background: #f59e0b;
             animation: pulse 2s infinite;
         }
         
         .status-found {
-            background: linear-gradient(135deg, #34d399, #10b981);
+            background: #10b981;
         }
         
         .status-not-found {
-            background: linear-gradient(135deg, #f87171, #ef4444);
+            background: #ef4444;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.95); }
+            50% { opacity: 0.7; transform: scale(0.9); }
         }
         
         .hidden {
@@ -253,38 +333,50 @@
         
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+            }
+            
             .camera-circle {
-                width: 250px;
-                height: 250px;
+                width: 280px;
+                height: 280px;
             }
             
             .user-name {
                 font-size: 28px;
-                margin: 30px 0 12px 0;
             }
             
             .user-info {
                 font-size: 16px;
-                padding: 12px 20px;
-                max-width: 320px;
+                padding: 18px 25px;
             }
             
             #name-input {
-                width: 300px;
                 font-size: 16px;
                 padding: 15px 20px;
             }
             
-            .datetime {
+            .toggle-button {
                 font-size: 14px;
-                margin-bottom: 25px;
+                padding: 10px 20px;
+                min-width: 100px;
+            }
+            
+            .menu-table th,
+            .menu-table td {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .menu-title {
+                font-size: 20px;
             }
         }
         
         @media (max-width: 480px) {
             .camera-circle {
-                width: 200px;
-                height: 200px;
+                width: 240px;
+                height: 240px;
             }
             
             .user-name {
@@ -293,48 +385,74 @@
             
             .user-info {
                 font-size: 14px;
-                max-width: 280px;
+                padding: 15px 20px;
             }
             
-            #name-input {
-                width: 260px;
+            .toggle-button {
+                font-size: 13px;
+                padding: 8px 16px;
+                min-width: 80px;
             }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Date Time -->
-        <div class="datetime" id="datetime"></div>
+        <!-- Toggle Header -->
+        <div class="toggle-header">
+            <button class="toggle-button active" id="face-detect-tab">Face Detect</button>
+            <button class="toggle-button" id="menu-tab">Menu</button>
+        </div>
         
-        <!-- Camera Circle -->
-        <div class="camera-circle" id="camera-circle">
-            <video id="video" autoplay muted playsinline></video>
-            <div class="loading-overlay" id="loading-overlay">
-                <div class="loading-text" id="loading-text">Đang khởi tạo...</div>
+        <!-- Face Detection Mode -->
+        <div class="face-detect-mode" id="face-detect-mode">
+            <!-- Camera Circle -->
+            <div class="camera-circle" id="camera-circle">
+                <video id="video" autoplay muted playsinline></video>
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-text" id="loading-text">Đang khởi tạo...</div>
+                </div>
+            </div>
+            
+            <!-- User Display -->
+            <div class="user-display">
+                <!-- Name Input (Desktop Mode) -->
+                <div class="name-input-container hidden" id="name-input-container">
+                    <input type="text" id="name-input" placeholder="Nhập tên để tìm kiếm..." autocomplete="off">
+                    <div class="suggestions-dropdown" id="suggestions-dropdown"></div>
+                </div>
+                
+                <!-- User Name -->
+                <div class="user-name" id="user-name">
+                    <span class="status-indicator status-detecting"></span>
+                    Chào mừng!
+                </div>
+                
+                <!-- User Info -->
+                <div class="user-info" id="user-info">
+                    Đang khởi tạo hệ thống nhận diện...
+                </div>
             </div>
         </div>
         
-        <!-- Name Input (Desktop Mode) -->
-        <div class="name-input-container hidden" id="name-input-container">
-            <input type="text" id="name-input" placeholder="Nhập tên để tìm kiếm..." autocomplete="off">
-            <div class="suggestions-dropdown" id="suggestions-dropdown"></div>
-        </div>
-        
-        <!-- User Name -->
-        <div class="user-name" id="user-name">
-            <span class="status-dot status-detecting"></span>
-            Chào mừng!
-        </div>
-        
-        <!-- User Info -->
-        <div class="user-info" id="user-info">
-            Đang khởi tạo hệ thống nhận diện...
+        <!-- Menu Mode -->
+        <div class="menu-mode" id="menu-mode">
+            <div class="menu-container">
+                <div class="menu-header">
+                    <div class="menu-title">Danh sách nhân viên</div>
+                    <div class="menu-subtitle">Toàn bộ dữ liệu từ Excel</div>
+                </div>
+                <div class="menu-content">
+                    <table class="menu-table" id="menu-table">
+                        <!-- Table content will be populated by JavaScript -->
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        class NeumorphismFaceRecognition {
+        class MinimalFaceRecognition {
             constructor() {
                 this.video = document.getElementById('video');
                 this.cameraCircle = document.getElementById('camera-circle');
@@ -345,7 +463,13 @@
                 this.suggestionsDropdown = document.getElementById('suggestions-dropdown');
                 this.userNameDisplay = document.getElementById('user-name');
                 this.userInfoDisplay = document.getElementById('user-info');
-                this.datetimeDisplay = document.getElementById('datetime');
+                
+                // Toggle elements
+                this.faceDetectTab = document.getElementById('face-detect-tab');
+                this.menuTab = document.getElementById('menu-tab');
+                this.faceDetectMode = document.getElementById('face-detect-mode');
+                this.menuMode = document.getElementById('menu-mode');
+                this.menuTable = document.getElementById('menu-table');
                 
                 this.allUsersData = [];
                 this.labeledFaceDescriptors = [];
@@ -356,15 +480,19 @@
                 this.pressTimer = null;
                 this.filteredSuggestions = [];
                 this.selectedSuggestionIndex = -1;
+                this.currentMode = 'face-detect';
                 
                 this.MODEL_URL = 'models';
                 
                 this.initEventListeners();
-                this.updateDateTime();
                 this.init();
             }
             
             initEventListeners() {
+                // Toggle tabs
+                this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
+                this.menuTab.addEventListener('click', () => this.switchMode('menu'));
+                
                 // Camera circle interactions
                 this.cameraCircle.addEventListener('click', () => this.toggleDetection());
                 this.cameraCircle.addEventListener('mousedown', () => this.startPressTimer());
@@ -378,22 +506,47 @@
                 this.nameInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
                 this.nameInput.addEventListener('focus', () => this.showSuggestions());
                 this.nameInput.addEventListener('blur', () => setTimeout(() => this.hideSuggestions(), 200));
-                
-                // Update datetime every minute
-                setInterval(() => this.updateDateTime(), 60000);
             }
             
-            updateDateTime() {
-                const now = new Date();
-                const options = {
-                    weekday: 'long',
-                    year: 'numeric', 
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                };
-                this.datetimeDisplay.textContent = now.toLocaleDateString('vi-VN', options);
+            switchMode(mode) {
+                this.currentMode = mode;
+                
+                // Update active tab
+                this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
+                this.menuTab.classList.toggle('active', mode === 'menu');
+                
+                // Show/hide modes
+                this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
+                this.menuMode.classList.toggle('active', mode === 'menu');
+                
+                if (mode === 'menu' && this.allUsersData.length > 0) {
+                    this.renderMenuTable();
+                }
+            }
+            
+            renderMenuTable() {
+                if (this.allUsersData.length === 0) return;
+                
+                const nameColumn = this.findNameColumn();
+                const columns = Object.keys(this.allUsersData[0]);
+                
+                // Create table header
+                const headerRow = columns.map(col => `<th>${col}</th>`).join('');
+                
+                // Create table rows
+                const bodyRows = this.allUsersData.map(user => {
+                    const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                
+                this.menuTable.innerHTML = `
+                    <thead>
+                        <tr>${headerRow}</tr>
+                    </thead>
+                    <tbody>
+                        ${bodyRows}
+                    </tbody>
+                `;
             }
             
             startPressTimer() {
@@ -401,7 +554,7 @@
                     this.captureAndCompare();
                     this.cameraCircle.classList.add('capturing');
                     setTimeout(() => this.cameraCircle.classList.remove('capturing'), 300);
-                }, 1000); // Hold for 1 second
+                }, 1000);
             }
             
             stopPressTimer() {
@@ -434,7 +587,7 @@
                     if (isMobile) {
                         await this.initCamera();
                         this.hideLoading();
-                        this.startDetection(); // Auto start detection
+                        this.startDetection();
                     } else {
                         this.showDesktopMode();
                         this.hideLoading();
@@ -537,7 +690,7 @@
             }
             
             toggleDetection() {
-                if (this.pressTimer) return; // Don't toggle if it's a long press
+                if (this.pressTimer) return;
                 
                 if (!this.isDesktopMode) {
                     if (this.isDetecting) {
@@ -633,7 +786,7 @@
                     const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
                     const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
                     
-                    this.userNameDisplay.innerHTML = `<span class="status-dot status-found"></span>${user[nameColumn]}`;
+                    this.userNameDisplay.innerHTML = `<span class="status-indicator status-found"></span>${user[nameColumn]}`;
                     this.userInfoDisplay.textContent = user[currentDayKey] || 'Không có lịch trình hôm nay';
                 } else {
                     this.updateUserInfo('Lỗi dữ liệu', 'not-found');
@@ -641,7 +794,7 @@
             }
             
             updateUserInfo(name, status = 'detecting') {
-                this.userNameDisplay.innerHTML = `<span class="status-dot status-${status}"></span>${name}`;
+                this.userNameDisplay.innerHTML = `<span class="status-indicator status-${status}"></span>${name}`;
                 if (status === 'detecting') {
                     this.userInfoDisplay.textContent = 'Hướng camera vào khuôn mặt để nhận diện';
                 } else if (status === 'not-found') {
@@ -667,7 +820,7 @@
                     const name = user[nameColumn] || '';
                     return name.toLowerCase().includes(query) || 
                            this.removeDiacritics(name).toLowerCase().includes(query);
-                }).slice(0, 8); // Limit to 8 suggestions
+                }).slice(0, 8);
                 
                 this.selectedSuggestionIndex = -1;
                 this.renderSuggestions();
@@ -759,7 +912,7 @@
         
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            new NeumorphismFaceRecognition();
+            new MinimalFaceRecognition();
         });
     </script>
 </body>

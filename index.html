@@ -17,26 +17,11 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8fafc;
             color: #334155;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
-            z-index: -1;
         }
         
         .app-container {
@@ -52,39 +37,30 @@
         /* Toggle Header */
         .toggle-header {
             display: flex;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 6px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            padding: 4px;
             margin-bottom: 40px;
             align-self: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .toggle-button {
-            padding: 14px 28px;
+            padding: 12px 24px;
             background: transparent;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 16px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            color: #64748b;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             min-width: 120px;
         }
         
         .toggle-button.active {
-            background: rgba(255, 255, 255, 0.95);
-            color: #4c1d95;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
-        }
-        
-        .toggle-button:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.95);
+            background: #ffffff;
+            color: #334155;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         /* Face Detection Mode */
@@ -99,38 +75,34 @@
         }
         
         .camera-circle {
-            width: 320px;
-            height: 320px;
+            width: 490px;
+            height: 490px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.3s ease;
             user-select: none;
-            border: 6px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid #e2e8f0;
+            margin-bottom: -50px;
         }
         
         .camera-circle:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
         }
         
         .camera-circle.detecting {
-            border-color: #fbbf24;
-            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3);
+            border-color: #f59e0b;
         }
         
         .camera-circle.found {
             border-color: #10b981;
-            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
         }
         
         .camera-circle.not-found {
             border-color: #ef4444;
-            box-shadow: 0 20px 40px rgba(239, 68, 68, 0.3);
         }
         
         .camera-circle.capturing {
@@ -180,29 +152,23 @@
         }
         
         .user-name {
-            font-size: 36px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-            min-height: 45px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .user-info {
             font-size: 18px;
-            color: rgba(255, 255, 255, 0.9);
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
+            color: #64748b;
+            background: #ffffff;
             padding: 20px 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             min-height: 60px;
             display: flex;
             align-items: center;
@@ -220,25 +186,22 @@
             width: 100%;
             padding: 18px 25px;
             font-size: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #334155;
             text-align: center;
             outline: none;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s ease;
         }
         
         #name-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: #94a3b8;
         }
         
         #name-input:focus {
-            border-color: rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
         }
         
         .suggestions-dropdown {
@@ -248,14 +211,13 @@
             right: 0;
             max-height: 300px;
             overflow-y: auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin-top: 8px;
             z-index: 20;
             display: none;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid #e2e8f0;
         }
         
         .suggestion-item {
@@ -263,8 +225,8 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 16px;
-            color: #4c1d95;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
         }
         
         .suggestion-item:last-child {
@@ -273,8 +235,8 @@
         
         .suggestion-item:hover,
         .suggestion-item.highlighted {
-            background: rgba(102, 126, 234, 0.1);
-            color: #3730a3;
+            background: #f8fafc;
+            color: #3b82f6;
         }
         
         /* About Mode */
@@ -283,7 +245,6 @@
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
         }
         
         .about-mode.active {
@@ -291,19 +252,16 @@
         }
         
         .about-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             padding: 40px;
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
-            transform: translateY(-20px);
         }
         
         .about-section {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
         
         .about-section:last-child {
@@ -311,13 +269,10 @@
         }
         
         .about-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 12px;
+            color: #1e293b;
+            margin-bottom: 15px;
         }
         
         .about-list {
@@ -326,26 +281,25 @@
         }
         
         .about-list li {
-            padding: 6px 0;
-            color: #475569;
-            font-size: 15px;
+            padding: 8px 0;
+            color: #64748b;
+            font-size: 16px;
             position: relative;
-            padding-left: 20px;
-            line-height: 1.5;
+            padding-left: 25px;
         }
         
         .about-list li:before {
             content: "•";
-            color: #667eea;
+            color: #3b82f6;
             font-weight: bold;
             position: absolute;
             left: 0;
         }
         
         .about-contact {
-            color: #667eea;
-            font-size: 16px;
-            font-weight: 600;
+            color: #3b82f6;
+            font-size: 18px;
+            font-weight: 500;
         }
         
         /* Menu Mode */
@@ -468,12 +422,12 @@
             }
             
             .camera-circle {
-                width: 280px;
-                height: 280px;
+                width: 350px;
+                height: 350px;
             }
             
             .user-name {
-                font-size: 30px;
+                font-size: 28px;
             }
             
             .user-info {
@@ -488,35 +442,34 @@
             
             .toggle-button {
                 font-size: 14px;
-                padding: 12px 22px;
+                padding: 10px 20px;
                 min-width: 100px;
             }
             
             .menu-table th,
             .menu-table td {
-                padding: 14px 18px;
+                padding: 12px 15px;
                 font-size: 14px;
             }
             
             .about-container {
                 padding: 30px 25px;
-                max-width: 90%;
             }
             
             .menu-search input {
-                font-size: 15px;
-                padding: 16px 20px;
+                font-size: 14px;
+                padding: 12px 18px;
             }
         }
         
         @media (max-width: 480px) {
             .camera-circle {
-                width: 250px;
-                height: 250px;
+                width: 280px;
+                height: 280px;
             }
             
             .user-name {
-                font-size: 26px;
+                font-size: 24px;
             }
             
             .user-info {
@@ -526,8 +479,8 @@
             
             .toggle-button {
                 font-size: 13px;
-                padding: 10px 18px;
-                min-width: 80px;
+                padding: 8px 16px;
+                min-width: 70px;
             }
             
             .about-container {
@@ -536,13 +489,7 @@
             
             .menu-search input {
                 font-size: 14px;
-                padding: 14px 18px;
-            }
-            
-            .menu-table th,
-            .menu-table td {
-                padding: 12px 15px;
-                font-size: 13px;
+                padding: 12px 16px;
             }
         }
     </style>
@@ -740,44 +687,7 @@
             
             renderMenuTable() {
                 if (this.filteredMenuData.length === 0) {
-                    this.menuTable.innerHTML = `
-                        <thead>
-                            <tr>
-                                <th>Tên</th>
-                                <th>Lịch trình</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="2" style="text-align: center; color: #94a3b8; padding: 40px; font-style: italic;">
-                                    ${this.menuSearchInput.value.trim() ? 'Không tìm thấy kết quả phù hợp' : 'Không có dữ liệu'}
-                                </td>
-                            </tr>
-                        </tbody>
-                    `;
-                    return;
-                }
-                
-                const columns = Object.keys(this.filteredMenuData[0]);
-                
-                // Create table header
-                const headerRow = columns.map(col => `<th>${col}</th>`).join('');
-                
-                // Create table rows
-                const bodyRows = this.filteredMenuData.map(user => {
-                    const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
-                    return `<tr>${cells}</tr>`;
-                }).join('');
-                
-                this.menuTable.innerHTML = `
-                    <thead>
-                        <tr>${headerRow}</tr>
-                    </thead>
-                    <tbody>
-                        ${bodyRows}
-                    </tbody>
-                `;
-            }94a3b8; padding: 40px;">Không tìm thấy dữ liệu</td></tr>';
+                    this.menuTable.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #94a3b8; padding: 40px;">Không tìm thấy dữ liệu</td></tr>';
                     return;
                 }
                 

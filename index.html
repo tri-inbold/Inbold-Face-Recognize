@@ -135,6 +135,45 @@
             color: #dc3545;
         }
 
+        .status.demo {
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        /* Debug panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            display: none;
+        }
+
+        .debug-panel.show {
+            display: block;
+        }
+
+        .debug-toggle {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
         .device-info {
             position: fixed;
             top: 10px;
@@ -189,6 +228,7 @@
 </head>
 <body>
     <div class="device-info" id="deviceInfo">Desktop Mode</div>
+    <button class="debug-toggle" onclick="toggleDebug()">Debug</button>
     
     <div class="container">
         <h1 class="title">Face Recognition</h1>
@@ -212,6 +252,8 @@
             <div class="user-name" id="userName"></div>
             <div class="user-data" id="userData"></div>
         </div>
+        
+        <div class="debug-panel" id="debugPanel"></div>
     </div>
 
     <script>
@@ -258,34 +300,57 @@
                 try {
                     this.updateStatus('Đang tải dữ liệu Excel...', 'loading');
                     
-                    // Giả lập dữ liệu Excel - trong thực tế bạn sẽ load từ data/InBold.xlsx
+                    // Thử load file Excel thật trước
+                    try {
+                        const response = await fetch('data/InBold.xlsx');
+                        if (response.ok) {
+                            const arrayBuffer = await response.arrayBuffer();
+                            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                            
+                            this.excelData = {};
+                            for (let i = 1; i < jsonData.length; i++) {
+                                const row = jsonData[i];
+                                if (row[0]) {
+                                    this.excelData[row[0]] = [
+                                        row[1] || 'Không có dữ liệu',
+                                        row[2] || 'Không có dữ liệu', 
+                                        row[3] || 'Không có dữ liệu',
+                                        row[4] || 'Không có dữ liệu',
+                                        row[5] || 'Không có dữ liệu'
+                                    ];
+                                }
+                            }
+                            
+                            if (Object.keys(this.excelData).length > 0) {
+                                console.log(`✓ Đã load Excel thành công với ${Object.keys(this.excelData).length} người dùng`);
+                                return;
+                            }
+                        }
+                    } catch (excelError) {
+                        console.warn('Không thể load file Excel:', excelError);
+                    }
+                    
+                    // Fallback: sử dụng dữ liệu giả lập
+                    console.log('⚠ Sử dụng dữ liệu demo');
                     this.excelData = {
                         'Nguyen Van A': ['Công việc A1', 'Công việc A2', 'Công việc A3', 'Công việc A4', 'Công việc A5'],
                         'Tran Thi B': ['Họp team', 'Phát triển sản phẩm', 'Testing', 'Review code', 'Báo cáo'],
                         'Le Van C': ['Thiết kế UI', 'Phân tích yêu cầu', 'Lập trình', 'Kiểm thử', 'Triển khai'],
                         'Pham Thi D': ['Marketing', 'Khảo sát thị trường', 'Lên kế hoạch', 'Thực hiện campaign', 'Đánh giá kết quả'],
-                        'Hoang Van E': ['Quản lý dự án', 'Phân bổ tài nguyên', 'Theo dõi tiến độ', 'Báo cáo', 'Tối ưu quy trình']
+                        'Hoang Van E': ['Quản lý dự án', 'Phân bổ tài nguyên', 'Theo dõi tiến độ', 'Báo cáo', 'Tối ưu quy trình'],
+                        'Demo User': ['Nhiệm vụ 1', 'Nhiệm vụ 2', 'Nhiệm vụ 3', 'Nhiệm vụ 4', 'Nhiệm vụ 5']
                     };
-                    
-                    // Uncomment phần này để load file Excel thực tế
-                    /*
-                    const response = await fetch('data/InBold.xlsx');
-                    const arrayBuffer = await response.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    
-                    for (let i = 1; i < jsonData.length; i++) {
-                        const row = jsonData[i];
-                        if (row[0]) {
-                            this.excelData[row[0]] = [row[1], row[2], row[3], row[4], row[5]];
-                        }
-                    }
-                    */
                     
                 } catch (error) {
                     console.error('Lỗi khi tải Excel:', error);
                     this.updateStatus('Không thể tải dữ liệu Excel', 'error');
+                    
+                    // Dữ liệu tối thiểu để app vẫn hoạt động
+                    this.excelData = {
+                        'Demo User': ['Công việc demo', 'Test task', 'Sample work', 'Demo job', 'Test duty']
+                    };
                 }
             }
             
@@ -335,35 +400,112 @@
                 try {
                     this.updateStatus('Đang tải dữ liệu khuôn mặt...', 'loading');
                     
-                    // Giả lập dữ liệu - trong thực tế sẽ load từ thư mục data/face/
                     const faceNames = Object.keys(this.excelData);
                     this.labeledDescriptors = [];
+                    let loadedCount = 0;
+                    let failedCount = 0;
                     
+                    // Thử load ảnh thật từ thư mục data/face/
                     for (const name of faceNames) {
-                        // Tạo descriptor giả lập - trong thực tế sẽ load và phân tích ảnh thật
-                        const fakeDescriptor = new Float32Array(128).map(() => Math.random() * 2 - 1);
-                        this.labeledDescriptors.push(
-                            new faceapi.LabeledFaceDescriptors(name, [fakeDescriptor])
-                        );
-                    }
-                    
-                    
-                    for (const name of faceNames) {
-                        const img = await faceapi.fetchImage(`data/face/${name}.jpg`);
-                        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                        if (detection) {
+                        try {
+                            this.updateStatus(`Đang xử lý ${name}... (${loadedCount + failedCount + 1}/${faceNames.length})`, 'loading');
+                            
+                            // Thử các định dạng file khác nhau
+                            const possibleExtensions = ['jpg', 'jpeg', 'png', 'JPG', 'JPEG', 'PNG'];
+                            let imageLoaded = false;
+                            
+                            for (const ext of possibleExtensions) {
+                                try {
+                                    const imagePath = `data/face/${name}.${ext}`;
+                                    const img = await this.loadImage(imagePath);
+                                    
+                                    if (img) {
+                                        const detection = await faceapi
+                                            .detectSingleFace(img)
+                                            .withFaceLandmarks()
+                                            .withFaceDescriptor();
+                                        
+                                        if (detection && detection.descriptor) {
+                                            this.labeledDescriptors.push(
+                                                new faceapi.LabeledFaceDescriptors(name, [detection.descriptor])
+                                            );
+                                            loadedCount++;
+                                            imageLoaded = true;
+                                            console.log(`✓ Đã load thành công: ${name}`);
+                                            break;
+                                        }
+                                    }
+                                } catch (err) {
+                                    // Thử extension tiếp theo
+                                    continue;
+                                }
+                            }
+                            
+                            if (!imageLoaded) {
+                                failedCount++;
+                                console.warn(`⚠ Không tìm thấy ảnh cho: ${name}`);
+                                
+                                // Tạo descriptor giả lập để app vẫn hoạt động
+                                const fakeDescriptor = new Float32Array(128).map(() => Math.random() * 2 - 1);
+                                this.labeledDescriptors.push(
+                                    new faceapi.LabeledFaceDescriptors(name, [fakeDescriptor])
+                                );
+                            }
+                            
+                        } catch (error) {
+                            failedCount++;
+                            console.error(`❌ Lỗi xử lý ${name}:`, error);
+                            
+                            // Tạo descriptor giả lập khi có lỗi
+                            const fakeDescriptor = new Float32Array(128).map(() => Math.random() * 2 - 1);
                             this.labeledDescriptors.push(
-                                new faceapi.LabeledFaceDescriptors(name, [detection.descriptor])
+                                new faceapi.LabeledFaceDescriptors(name, [fakeDescriptor])
                             );
                         }
                     }
                     
+                    // Báo cáo kết quả
+                    if (loadedCount > 0) {
+                        this.updateStatus(`Sẵn sàng nhận diện (${loadedCount}/${faceNames.length} ảnh thật)`, 'ready');
+                        console.log(`📊 Thống kê: ${loadedCount} ảnh thật, ${failedCount} ảnh giả lập`);
+                    } else {
+                        this.updateStatus('Sẵn sàng nhận diện (chế độ demo)', 'ready');
+                        console.log('⚠ Đang chạy ở chế độ demo - không có ảnh thật nào được load');
+                    }
                     
-                    this.updateStatus('Sẵn sàng nhận diện', 'ready');
                 } catch (error) {
                     console.error('Lỗi tải descriptor:', error);
-                    this.updateStatus('Không thể tải dữ liệu khuôn mặt', 'error');
+                    this.updateStatus('Lỗi tải dữ liệu khuôn mặt - chuyển sang chế độ chỉ nhập tên', 'error');
+                    
+                    // Tắt camera và chuyển sang chế độ desktop
+                    if (this.video && this.video.srcObject) {
+                        this.video.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                    document.getElementById('cameraContainer').style.display = 'none';
+                    document.getElementById('inputContainer').style.display = 'block';
+                    this.initDesktopMode();
                 }
+            }
+            
+            // Helper function để load ảnh với timeout
+            loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Timeout loading image'));
+                    }, 5000); // 5 second timeout
+                    
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        clearTimeout(timeout);
+                        resolve(img);
+                    };
+                    img.onerror = () => {
+                        clearTimeout(timeout);
+                        reject(new Error('Failed to load image'));
+                    };
+                    img.src = src;
+                });
             }
             
             async startFaceDetection() {
@@ -499,6 +641,42 @@
                 location.reload();
             }, 500);
         });
+        
+        // Debug functions
+        let debugLogs = [];
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            debugLogs.push(`[LOG] ${args.join(' ')}`);
+            updateDebugPanel();
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            debugLogs.push(`[ERROR] ${args.join(' ')}`);
+            updateDebugPanel();
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            debugLogs.push(`[WARN] ${args.join(' ')}`);
+            updateDebugPanel();
+        };
+        
+        function updateDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            if (panel) {
+                panel.innerHTML = debugLogs.slice(-10).join('<br>');
+            }
+        }
+        
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('show');
+        }
     </script>
 </body>
 </html>

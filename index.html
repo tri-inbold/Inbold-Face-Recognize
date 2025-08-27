@@ -347,7 +347,7 @@
                         );
                     }
                     
-                    /* Uncomment để load ảnh thật
+                    
                     for (const name of faceNames) {
                         const img = await faceapi.fetchImage(`data/face/${name}.jpg`);
                         const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
@@ -357,7 +357,7 @@
                             );
                         }
                     }
-                    */
+                    
                     
                     this.updateStatus('Sẵn sàng nhận diện', 'ready');
                 } catch (error) {

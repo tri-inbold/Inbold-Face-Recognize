@@ -110,19 +110,41 @@
                     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Thử nhiều cách đọc dữ liệu
+                    addDebugMessage(`Sheet name: ${sheetName}`);
+                    
+                    // Phương pháp 1: Đọc bình thường
                     allUsersData = XLSX.utils.sheet_to_json(worksheet);
+                    addDebugMessage(`Phương pháp 1 - Số dòng: ${allUsersData.length}`);
                     
-                    addDebugMessage(`✅ Tải Excel thành công: ${allUsersData.length} dòng dữ liệu`);
-                    
-                    // Debug: Hiển thị một số dòng đầu
                     if (allUsersData.length > 0) {
-                        addDebugMessage(`Cấu trúc dữ liệu: ${Object.keys(allUsersData[0]).join(', ')}`);
-                        addDebugMessage(`Ví dụ dòng đầu: ${JSON.stringify(allUsersData[0])}`);
+                        addDebugMessage(`Các cột có sẵn: [${Object.keys(allUsersData[0]).join(', ')}]`);
+                        addDebugMessage(`Dòng đầu tiên: ${JSON.stringify(allUsersData[0])}`);
+                    } else {
+                        // Phương pháp 2: Đọc với header tùy chỉnh
+                        addDebugMessage('Thử phương pháp 2 - đọc với header từ dòng 2...');
+                        allUsersData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
+                        addDebugMessage(`Phương pháp 2 - Số dòng: ${allUsersData.length}`);
+                        
+                        if (allUsersData.length > 0) {
+                            addDebugMessage(`Các cột (method 2): [${Object.keys(allUsersData[0]).join(', ')}]`);
+                        }
+                    }
+                    
+                    // Phương pháp 3: Đọc raw data để debug
+                    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    addDebugMessage(`Raw data - ${rawData.length} dòng:`);
+                    for (let i = 0; i < Math.min(5, rawData.length); i++) {
+                        addDebugMessage(`Dòng ${i + 1}: [${rawData[i].join(' | ')}]`);
                     }
                     
                     if (allUsersData.length === 0) {
                         throw new Error("File Excel không có dữ liệu hoặc sai định dạng.");
                     }
+                    
+                    addDebugMessage(`✅ Tải Excel thành công: ${allUsersData.length} dòng dữ liệu`);
+                    
                 } catch (error) {
                     addDebugMessage(`❌ Lỗi tải Excel: ${error.message}`);
                     loader.innerText = 'Lỗi: Không thể tải file InBold.xlsx.';

@@ -5,99 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InBold Face Recognition</title>
 
-    <!-- 1. Tải các thư viện cần thiết -->
-    <!-- Thư viện xử lý file Excel từ CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- ĐÃ SỬA: Tải thư viện face-api.js từ CDN thay vì file local không tồn tại -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
-    <!-- 2. CSS cho giao diện -->
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
-
-        .app-container {
-            padding: 20px;
-            max-width: 90vw;
-        }
-
-        #loader {
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .camera-view {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin: 20px auto;
-            border: 5px solid #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            background-color: #000;
-        }
-
-        #video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scaleX(-1);
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-        }
-
-        #desktop-container {
-            margin: 40px auto;
-        }
-
-        #name-input {
-            padding: 15px;
-            font-size: 1.2em;
-            width: 300px;
-            border-radius: 30px;
-            border: 1px solid #ccc;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        #info-container {
-            margin-top: 30px;
-        }
-
-        #user-name {
-            font-size: 2em;
-            margin-bottom: 10px;
-            color: #0056b3;
-            word-wrap: break-word;
-        }
-
-        #user-info {
-            font-size: 1.2em;
-            min-height: 50px;
-            word-wrap: break-word;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f0f2f5; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
+        .app-container { padding: 20px; max-width: 90vw; }
+        #loader { font-size: 1.2em; font-weight: bold; }
+        .camera-view { position: relative; width: 300px; height: 300px; border-radius: 50%; overflow: hidden; margin: 20px auto; border: 5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #000; }
+        #video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scaleX(-1); min-width: 100%; min-height: 100%; width: auto; height: auto; }
+        #desktop-container { margin: 40px auto; }
+        #name-input { padding: 15px; font-size: 1.2em; width: 300px; border-radius: 30px; border: 1px solid #ccc; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        #info-container { margin-top: 30px; }
+        #user-name { font-size: 2em; margin-bottom: 10px; color: #0056b3; word-wrap: break-word; }
+        #user-info { font-size: 1.2em; min-height: 50px; word-wrap: break-word; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <!-- 3. HTML cho cấu trúc ứng dụng -->
     <div class="app-container">
         <div id="loader">Đang tải model và dữ liệu...</div>
         <div id="camera-container" class="hidden">
@@ -114,7 +39,6 @@
         </div>
     </div>
 
-    <!-- 4. JavaScript cho logic ứng dụng -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('video');
@@ -126,8 +50,18 @@
             const userInfoDisplay = document.getElementById('user-info');
 
             let allUsersData = [];
-            // ĐÃ SỬA: Đường dẫn tương đối đúng cho GitHub Pages
             const MODEL_URL = 'models';
+
+            // ===================================================================
+            // HÀM MỚI: DÙNG ĐỂ BỎ DẤU TIẾNG VIỆT TỪ TÊN TRONG EXCEL
+            // ===================================================================
+            function removeDiacritics(str) {
+                return str
+                    .normalize('NFD') // Tách ký tự và dấu
+                    .replace(/[\u0300-\u036f]/g, '') // Bỏ các dấu
+                    .replace(/đ/g, 'd') // Chuyển đổi đ, Đ
+                    .replace(/Đ/g, 'D');
+            }
 
             async function loadModels() {
                 try {
@@ -137,7 +71,6 @@
                         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                     ]);
                 } catch (error) {
-                    console.error("Lỗi khi tải model của face-api:", error);
                     loader.innerText = 'Lỗi: Không thể tải model. Vui lòng kiểm tra lại thư mục models.';
                     throw error;
                 }
@@ -145,7 +78,6 @@
 
             async function loadUserDataFromExcel() {
                 try {
-                    // ĐÃ SỬA: Đường dẫn tương đối đúng cho GitHub Pages
                     const response = await fetch('data/InBold.xlsx');
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const arrayBuffer = await response.arrayBuffer();
@@ -157,7 +89,6 @@
                         throw new Error("File Excel không có dữ liệu hoặc sai định dạng.");
                     }
                 } catch (error) {
-                    console.error('Lỗi khi tải hoặc xử lý file Excel:', error);
                     loader.innerText = 'Lỗi: Không thể tải file InBold.xlsx.';
                     throw error;
                 }
@@ -166,26 +97,35 @@
             async function createLabeledFaceDescriptors() {
                 if (!allUsersData || allUsersData.length === 0) return [];
                 loader.innerText = `Đang xử lý ${allUsersData.length} ảnh...`;
+                
                 const labeledFaceDescriptors = await Promise.all(
                     allUsersData.map(async (user, index) => {
-                        const name = user['Họ tên'];
-                        if (!name) return undefined;
-                        // ĐÃ SỬA: Đường dẫn tương đối đúng cho GitHub Pages
-                        const imgUrl = `data/face/${name}.jpg`;
+                        // Lấy tên gốc có dấu từ Excel
+                        const nameWithDiacritics = user['Họ tên'];
+                        if (!nameWithDiacritics) return undefined;
+
+                        // ===============================================================
+                        // ĐÃ SỬA: Chuyển tên có dấu thành không dấu để khớp với tên file
+                        // ===============================================================
+                        const nameWithoutDiacritics = removeDiacritics(nameWithDiacritics);
+                        const imgUrl = `data/face/${nameWithoutDiacritics}.jpg`;
+
                         try {
                             const img = await faceapi.fetchImage(imgUrl);
                             const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                             if (detections) {
                                 loader.innerText = `Đang xử lý ảnh: ${index + 1}/${allUsersData.length}`;
-                                return new faceapi.LabeledFaceDescriptors(name, [detections.descriptor]);
+                                // Quan trọng: Label vẫn là tên GỐC CÓ DẤU để hiển thị cho đẹp
+                                return new faceapi.LabeledFaceDescriptors(nameWithDiacritics, [detections.descriptor]);
                             }
                             return undefined;
                         } catch (e) {
-                            console.warn(`Không thể xử lý ảnh cho: ${name}. Bỏ qua...`, e);
+                            console.error(`Lỗi khi xử lý ảnh cho "${nameWithDiacritics}" tại URL: ${imgUrl}`, e);
                             return undefined;
                         }
                     })
                 );
+                // Lọc ra các kết quả undefined (do lỗi hoặc không tìm thấy mặt)
                 return labeledFaceDescriptors.filter(d => d !== undefined);
             }
 
@@ -193,12 +133,12 @@
                 navigator.mediaDevices.getUserMedia({ video: {} })
                     .then(stream => { video.srcObject = stream; })
                     .catch(err => {
-                        console.error('Lỗi truy cập camera:', err);
-                        loader.innerText = 'Lỗi! Không thể truy cập camera. Vui lòng cấp quyền và tải lại trang.';
+                        loader.innerText = 'Lỗi! Không thể truy cập camera. Vui lòng cấp quyền.';
                     });
             }
 
             function displayUserInfo(name) {
+                // Luôn tìm kiếm dựa trên tên có dấu
                 const user = allUsersData.find(u => u['Họ tên'] && u['Họ tên'].toLowerCase() === name.toLowerCase());
                 if (user) {
                     const today = new Date().getDay();
@@ -221,7 +161,7 @@
                         startCamera();
                         const labeledFaceDescriptors = await createLabeledFaceDescriptors();
                         if (labeledFaceDescriptors.length === 0) {
-                            loader.innerText = "Lỗi: Không có dữ liệu khuôn mặt nào được xử lý.";
+                            loader.innerText = "Lỗi: Không có dữ liệu khuôn mặt nào được xử lý. Vui lòng kiểm tra Console (F12) để xem chi tiết.";
                             return;
                         }
                         const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
@@ -245,10 +185,23 @@
                     } else {
                         desktopContainer.classList.remove('hidden');
                         loader.classList.add('hidden');
+                        // Hiển thị thông tin người dùng dựa trên tên nhập vào (có dấu hoặc không dấu)
                         nameInput.addEventListener('keypress', (e) => {
                             if (e.key === 'Enter') {
                                 const name = nameInput.value.trim();
-                                if (name) displayUserInfo(name);
+                                if (name) {
+                                    // Tìm kiếm linh hoạt hơn
+                                    const userFound = allUsersData.find(u => 
+                                        u['Họ tên'].toLowerCase() === name.toLowerCase() || 
+                                        removeDiacritics(u['Họ tên']).toLowerCase() === name.toLowerCase()
+                                    );
+                                    if (userFound) {
+                                        displayUserInfo(userFound['Họ tên']);
+                                    } else {
+                                        userNameDisplay.innerText = 'Không tìm thấy';
+                                        userInfoDisplay.innerText = 'Vui lòng kiểm tra lại tên đã nhập.';
+                                    }
+                                }
                             }
                         });
                     }
@@ -256,7 +209,6 @@
                     console.error("Đã có lỗi nghiêm trọng xảy ra khi khởi tạo ứng dụng.", error);
                 }
             }
-
             run();
         });
     </script>

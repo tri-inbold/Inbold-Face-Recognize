@@ -75,8 +75,8 @@
         }
         
         .camera-circle {
-            width: 700px;
-            height: 700px;
+            width: 490px;
+            height: 490px;
             border-radius: 50%;
             background: #ffffff;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -306,10 +306,40 @@
         .menu-mode {
             flex: 1;
             display: none;
+            flex-direction: column;
+            padding-top: 20px;
         }
         
         .menu-mode.active {
-            display: block;
+            display: flex;
+        }
+        
+        .menu-search {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .menu-search input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #334155;
+            outline: none;
+            font-weight: 500;
+            transition: border-color 0.2s ease;
+        }
+        
+        .menu-search input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .menu-search input:focus {
+            border-color: #3b82f6;
         }
         
         .menu-container {
@@ -317,7 +347,7 @@
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            height: calc(100vh - 150px);
+            height: calc(100vh - 200px);
             display: flex;
             flex-direction: column;
         }
@@ -458,9 +488,9 @@
     <div class="app-container">
         <!-- Toggle Header -->
         <div class="toggle-header">
-            <button class="toggle-button" id="about-tab">About</button>
-            <button class="toggle-button active" id="face-detect-tab">Face Detect</button>
             <button class="toggle-button" id="menu-tab">Menu</button>
+            <button class="toggle-button active" id="face-detect-tab">Face Detect</button>
+            <button class="toggle-button" id="about-tab">About</button>
         </div>
         
         <!-- About Mode -->
@@ -515,6 +545,9 @@
         
         <!-- Menu Mode -->
         <div class="menu-mode" id="menu-mode">
+            <div class="menu-search">
+                <input type="text" id="menu-search-input" placeholder="Tìm kiếm tên nhân viên..." autocomplete="off">
+            </div>
             <div class="menu-container">
                 <div class="menu-content">
                     <table class="menu-table" id="menu-table">
@@ -589,10 +622,12 @@
                 this.currentMode = mode;
                 
                 // Update active tab
+                this.aboutTab.classList.toggle('active', mode === 'about');
                 this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
                 this.menuTab.classList.toggle('active', mode === 'menu');
                 
                 // Show/hide modes
+                this.aboutMode.classList.toggle('active', mode === 'about');
                 this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
                 this.menuMode.classList.toggle('active', mode === 'menu');
                 
@@ -605,7 +640,12 @@
                 if (this.allUsersData.length === 0) return;
                 
                 const nameColumn = this.findNameColumn();
-                const columns = Object.keys(this.allUsersData[0]);
+                const today = new Date().getDay();
+                const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
+                const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                
+                // Only show Name column and current day column
+                const columns = [nameColumn, currentDayKey];
                 
                 // Create table header
                 const headerRow = columns.map(col => `<th>${col}</th>`).join('');
@@ -782,7 +822,8 @@
                 if (this.isDetecting || this.isDesktopMode) return;
                 
                 this.isDetecting = true;
-                this.cameraCircle.classList.add('active');
+                this.cameraCircle.classList.remove('found', 'not-found');
+                this.cameraCircle.classList.add('detecting');
                 this.updateUserInfo('Đang nhận diện...', 'detecting');
                 
                 const detect = async () => {
@@ -798,11 +839,17 @@
                             const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
                             
                             if (bestMatch.distance < this.currentThreshold) {
+                                this.cameraCircle.classList.remove('detecting', 'not-found');
+                                this.cameraCircle.classList.add('found');
                                 this.displayUserInfo(bestMatch.label);
                             } else {
+                                this.cameraCircle.classList.remove('detecting', 'found');
+                                this.cameraCircle.classList.add('not-found');
                                 this.updateUserInfo('Không nhận diện được', 'not-found');
                             }
                         } else {
+                            this.cameraCircle.classList.remove('found', 'not-found');
+                            this.cameraCircle.classList.add('detecting');
                             this.updateUserInfo('Không phát hiện khuôn mặt', 'detecting');
                         }
                     } catch (error) {
@@ -819,7 +866,7 @@
             
             stopDetection() {
                 this.isDetecting = false;
-                this.cameraCircle.classList.remove('active');
+                this.cameraCircle.classList.remove('detecting', 'found', 'not-found');
                 this.updateUserInfo('Nhấn để bắt đầu nhận diện', 'detecting');
             }
             
@@ -842,11 +889,17 @@
                         const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
                         
                         if (bestMatch.distance < this.currentThreshold) {
+                            this.cameraCircle.classList.remove('detecting', 'not-found');
+                            this.cameraCircle.classList.add('found');
                             this.displayUserInfo(bestMatch.label);
                         } else {
+                            this.cameraCircle.classList.remove('detecting', 'found');
+                            this.cameraCircle.classList.add('not-found');
                             this.updateUserInfo('Không nhận diện được', 'not-found');
                         }
                     } else {
+                        this.cameraCircle.classList.remove('found', 'not-found');
+                        this.cameraCircle.classList.add('detecting');
                         this.updateUserInfo('Không phát hiện khuôn mặt', 'not-found');
                     }
                 } catch (error) {
@@ -863,7 +916,7 @@
                     const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
                     const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
                     
-                    this.userNameDisplay.innerHTML = `<span class="status-indicator status-found"></span>${user[nameColumn]}`;
+                    this.userNameDisplay.textContent = user[nameColumn];
                     this.userInfoDisplay.textContent = user[currentDayKey] || 'Không có lịch trình hôm nay';
                 } else {
                     this.updateUserInfo('Lỗi dữ liệu', 'not-found');
@@ -871,7 +924,7 @@
             }
             
             updateUserInfo(name, status = 'detecting') {
-                this.userNameDisplay.innerHTML = `<span class="status-indicator status-${status}"></span>${name}`;
+                this.userNameDisplay.textContent = name;
                 if (status === 'detecting') {
                     this.userInfoDisplay.textContent = 'Hướng camera vào khuôn mặt để nhận diện';
                 } else if (status === 'not-found') {

@@ -53,6 +53,12 @@
             margin-bottom: 40px;
             align-self: center;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            touch-action: pan-x;
+        }
+        
+        .toggle-header.desktop-mode .toggle-button[data-mode="face-detect"] {
+            display: none;
         }
         
         .toggle-button {
@@ -581,10 +587,10 @@
 <body>
     <div class="app-container">
         <!-- Toggle Header -->
-        <div class="toggle-header">
-            <button class="toggle-button" id="menu-tab">Menu</button>
-            <button class="toggle-button active" id="face-detect-tab">Face Detect</button>
-            <button class="toggle-button" id="about-tab">About</button>
+        <div class="toggle-header" id="toggle-header">
+            <button class="toggle-button" id="menu-tab" data-mode="menu">Menu</button>
+            <button class="toggle-button active" id="face-detect-tab" data-mode="face-detect">Face Detect</button>
+            <button class="toggle-button" id="about-tab" data-mode="about">About</button>
         </div>
         
         <!-- About Mode -->
@@ -670,6 +676,7 @@
                 this.menuTab = document.getElementById('menu-tab');
                 this.faceDetectTab = document.getElementById('face-detect-tab');
                 this.aboutTab = document.getElementById('about-tab');
+                this.toggleHeader = document.getElementById('toggle-header');
                 this.menuMode = document.getElementById('menu-mode');
                 this.faceDetectMode = document.getElementById('face-detect-mode');
                 this.aboutMode = document.getElementById('about-mode');
@@ -695,8 +702,30 @@
                 this.MODEL_URL = 'models';
                 this.lastExcelModified = null;
                 
+                // Swipe detection
+                this.touchStartX = 0;
+                this.touchEndX = 0;
+                this.minSwipeDistance = 50;
+                this.tabOrder = ['menu', 'face-detect', 'about'];
+                
+                this.detectDeviceMode();
                 this.initEventListeners();
                 this.init();
+            }
+            
+            detectDeviceMode() {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                
+                this.isDesktopMode = !isMobile && !hasTouch;
+                
+                if (this.isDesktopMode) {
+                    this.toggleHeader.classList.add('desktop-mode');
+                    // Switch to menu tab if currently on face-detect
+                    if (this.currentMode === 'face-detect') {
+                        this.switchMode('menu');
+                    }
+                }
             }
             
             // Cache management methods
@@ -777,6 +806,9 @@
                 this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
                 this.aboutTab.addEventListener('click', () => this.switchMode('about'));
                 
+                // Swipe functionality for mobile
+                this.addSwipeListeners();
+                
                 // Menu search
                 this.menuSearchInput.addEventListener('input', (e) => this.handleMenuSearch(e));
                 
@@ -793,6 +825,53 @@
                 this.nameInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
                 this.nameInput.addEventListener('focus', () => this.showSuggestions());
                 this.nameInput.addEventListener('blur', () => setTimeout(() => this.hideSuggestions(), 200));
+            }
+            
+            addSwipeListeners() {
+                const container = document.querySelector('.app-container');
+                
+                container.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                container.addEventListener('touchend', (e) => {
+                    this.touchEndX = e.changedTouches[0].screenX;
+                    this.handleSwipe();
+                }, { passive: true });
+            }
+            
+            handleSwipe() {
+                const swipeDistance = this.touchEndX - this.touchStartX;
+                
+                if (Math.abs(swipeDistance) < this.minSwipeDistance) return;
+                
+                const currentIndex = this.tabOrder.indexOf(this.currentMode);
+                let newIndex;
+                
+                if (swipeDistance > 0) {
+                    // Swipe right - go to previous tab
+                    newIndex = currentIndex - 1;
+                } else {
+                    // Swipe left - go to next tab
+                    newIndex = currentIndex + 1;
+                }
+                
+                // Handle wrapping
+                if (newIndex < 0) newIndex = this.tabOrder.length - 1;
+                if (newIndex >= this.tabOrder.length) newIndex = 0;
+                
+                // Skip face-detect tab on desktop
+                if (this.isDesktopMode && this.tabOrder[newIndex] === 'face-detect') {
+                    if (swipeDistance > 0) {
+                        newIndex = newIndex - 1;
+                        if (newIndex < 0) newIndex = this.tabOrder.length - 1;
+                    } else {
+                        newIndex = newIndex + 1;
+                        if (newIndex >= this.tabOrder.length) newIndex = 0;
+                    }
+                }
+                
+                this.switchMode(this.tabOrder[newIndex]);
             }
             
             switchMode(mode) {

@@ -14,10 +14,15 @@ https://tri-inbold.github.io/Inbold-Face-Recognize/
 - Hold to capture image (high effect)
 - Tab menu to look all
 
+# Update source
+- Excel: data/InBold.xlsx
+- Face: data/face/
+
 # Tech Stack
 - HTML, CSS, JavaScript
 - face-api.js
 - SheetJS (xlsx.js)
+- Local cache
 
 # Contact
 tri.vu.trong@inbold.com

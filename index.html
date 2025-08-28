@@ -20,9 +20,14 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #334155;
             height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
         }
         
         .app-container {
@@ -592,9 +597,11 @@
                         <li>Snapshot mode for improved accuracy.</li>
                         <li>Search for user information by name.</li>
                         <li>Displays menu on the day of the week.</li>
+                        <li>Intelligent caching for faster loading.</li>
                     </ul>
                 </div>
                 <div class="about-section">
+                    <button class="contact-button" onclick="clearCacheAndReload()" style="margin-right: 10px; background: linear-gradient(135deg, #ef4444, #f87171);">Xóa Cache</button>
                     <a href="mailto:tri.vu.trong@inbold.com" class="contact-button">tri.vu.trong@inbold.com</a>
                 </div>
             </div>
@@ -674,18 +681,94 @@
                 this.faceMatcher = null;
                 this.isDetecting = false;
                 this.isDesktopMode = false;
-                this.currentThreshold = 0.45; // Lowered from 0.6 for better accuracy
+                this.currentThreshold = 0.45;
                 this.pressTimer = null;
                 this.filteredSuggestions = [];
                 this.selectedSuggestionIndex = -1;
                 this.currentMode = 'face-detect';
-                this.allMenuData = []; // Store original data for filtering
-                this.filteredMenuData = []; // Store filtered data
+                this.allMenuData = [];
+                this.filteredMenuData = [];
                 
+                // Cache configuration
+                this.CACHE_VERSION = '1.0';
+                this.CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
                 this.MODEL_URL = 'models';
+                this.lastExcelModified = null;
                 
                 this.initEventListeners();
                 this.init();
+            }
+            
+            // Cache management methods
+            getCacheKey(key) {
+                return `face_recognition_${this.CACHE_VERSION}_${key}`;
+            }
+            
+            setCache(key, data) {
+                try {
+                    const cacheData = {
+                        data: data,
+                        timestamp: Date.now(),
+                        version: this.CACHE_VERSION
+                    };
+                    localStorage.setItem(this.getCacheKey(key), JSON.stringify(cacheData));
+                } catch (error) {
+                    console.warn('Cache write failed:', error);
+                }
+            }
+            
+            getCache(key) {
+                try {
+                    const cached = localStorage.getItem(this.getCacheKey(key));
+                    if (!cached) return null;
+                    
+                    const cacheData = JSON.parse(cached);
+                    const isExpired = Date.now() - cacheData.timestamp > this.CACHE_EXPIRY;
+                    const isOldVersion = cacheData.version !== this.CACHE_VERSION;
+                    
+                    if (isExpired || isOldVersion) {
+                        localStorage.removeItem(this.getCacheKey(key));
+                        return null;
+                    }
+                    
+                    return cacheData.data;
+                } catch (error) {
+                    console.warn('Cache read failed:', error);
+                    return null;
+                }
+            }
+            
+            clearCache() {
+                try {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith('face_recognition_')) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                } catch (error) {
+                    console.warn('Cache clear failed:', error);
+                }
+            }
+            
+            // Check if Excel file has been modified
+            async checkExcelModified() {
+                try {
+                    const response = await fetch('data/InBold.xlsx', { method: 'HEAD' });
+                    const lastModified = response.headers.get('Last-Modified');
+                    const etag = response.headers.get('ETag');
+                    
+                    const currentIdentifier = lastModified || etag || Date.now();
+                    const cachedIdentifier = this.getCache('excel_modified');
+                    
+                    if (cachedIdentifier !== currentIdentifier) {
+                        this.setCache('excel_modified', currentIdentifier);
+                        return true; // File has been modified
+                    }
+                    return false; // File unchanged
+                } catch (error) {
+                    console.warn('Could not check Excel modification:', error);
+                    return true; // Assume modified on error
+                }
             }
             
             initEventListeners() {
@@ -807,14 +890,51 @@
             
             async init() {
                 try {
-                    this.updateLoadingText('Đang tải models...');
-                    await this.loadModels();
+                    // Check if models are cached
+                    const cachedModels = this.getCache('models_loaded');
+                    if (!cachedModels) {
+                        this.updateLoadingText('Đang tải models...');
+                        await this.loadModels();
+                        this.setCache('models_loaded', true);
+                    } else {
+                        this.updateLoadingText('Đang tải models từ cache...');
+                        await this.loadModels(); // Still need to load into memory
+                    }
                     
-                    this.updateLoadingText('Đang tải dữ liệu...');
-                    await this.loadUserDataFromExcel();
+                    // Check if Excel data needs to be reloaded
+                    const excelModified = await this.checkExcelModified();
+                    let cachedUserData = this.getCache('user_data');
                     
-                    this.updateLoadingText('Đang xử lý ảnh...');
-                    await this.createLabeledFaceDescriptors();
+                    if (excelModified || !cachedUserData) {
+                        this.updateLoadingText('Đang tải dữ liệu mới...');
+                        await this.loadUserDataFromExcel();
+                        this.setCache('user_data', this.allUsersData);
+                    } else {
+                        this.updateLoadingText('Đang tải dữ liệu từ cache...');
+                        this.allUsersData = cachedUserData;
+                    }
+                    
+                    // Check cached face descriptors
+                    let cachedDescriptors = this.getCache('face_descriptors');
+                    const cachedDescriptorNames = this.getCache('descriptor_names');
+                    
+                    if (excelModified || !cachedDescriptors || !cachedDescriptorNames || 
+                        !this.validateCachedDescriptors(cachedDescriptorNames)) {
+                        this.updateLoadingText('Đang xử lý ảnh...');
+                        await this.createLabeledFaceDescriptors();
+                        
+                        // Cache the descriptors
+                        const descriptorData = this.labeledFaceDescriptors.map(desc => ({
+                            label: desc.label,
+                            descriptors: Array.from(desc.descriptors[0]) // Convert Float32Array to regular array
+                        }));
+                        
+                        this.setCache('face_descriptors', descriptorData);
+                        this.setCache('descriptor_names', this.labeledFaceDescriptors.map(d => d.label));
+                    } else {
+                        this.updateLoadingText('Đang tải descriptors từ cache...');
+                        this.loadCachedDescriptors(cachedDescriptors);
+                    }
                     
                     if (this.labeledFaceDescriptors.length === 0) {
                         throw new Error('Không có dữ liệu khuôn mặt');
@@ -837,7 +957,33 @@
                 } catch (error) {
                     this.updateLoadingText(`Lỗi: ${error.message}`);
                     console.error('Init error:', error);
+                    
+                    // Try to recover by clearing cache
+                    if (error.message.includes('cache') || error.message.includes('Cache')) {
+                        this.updateLoadingText('Đang xóa cache và thử lại...');
+                        this.clearCache();
+                        setTimeout(() => location.reload(), 2000);
+                    }
                 }
+            }
+            
+            // Validate if cached descriptors match current user data
+            validateCachedDescriptors(cachedNames) {
+                const nameColumn = this.findNameColumn();
+                const currentNames = this.allUsersData
+                    .filter(user => user[nameColumn] && user[nameColumn].toString().trim() !== '')
+                    .map(user => user[nameColumn]);
+                
+                return cachedNames && cachedNames.length === currentNames.length &&
+                       cachedNames.every(name => currentNames.includes(name));
+            }
+            
+            // Load cached descriptors back into LabeledFaceDescriptors format
+            loadCachedDescriptors(cachedDescriptors) {
+                this.labeledFaceDescriptors = cachedDescriptors.map(cached => {
+                    const descriptor = new Float32Array(cached.descriptors);
+                    return new faceapi.LabeledFaceDescriptors(cached.label, [descriptor]);
+                });
             }
             
             updateLoadingText(text) {
@@ -876,33 +1022,79 @@
             async createLabeledFaceDescriptors() {
                 this.labeledFaceDescriptors = [];
                 const nameColumn = this.findNameColumn();
+                const totalUsers = this.allUsersData.filter(user => 
+                    user[nameColumn] && user[nameColumn].toString().trim() !== ''
+                ).length;
                 
-                for (let index = 0; index < this.allUsersData.length; index++) {
-                    const user = this.allUsersData[index];
-                    const name = user[nameColumn];
+                let processed = 0;
+                const batchSize = 3; // Process 3 images at a time
+                
+                for (let index = 0; index < this.allUsersData.length; index += batchSize) {
+                    const batch = this.allUsersData.slice(index, index + batchSize);
                     
-                    if (!name || name.toString().trim() === '') continue;
-                    
-                    const imgUrl = `data/face/${this.removeDiacritics(name)}.jpg`;
-                    
-                    try {
-                        this.updateLoadingText(`Xử lý ${index + 1}/${this.allUsersData.length}: ${name}`);
+                    const batchPromises = batch.map(async (user, batchIndex) => {
+                        const actualIndex = index + batchIndex;
+                        const name = user[nameColumn];
                         
-                        const img = await faceapi.fetchImage(imgUrl);
-                        const detections = await faceapi
-                            .detectSingleFace(img)
-                            .withFaceLandmarks()
-                            .withFaceDescriptor();
+                        if (!name || name.toString().trim() === '') return null;
                         
-                        if (detections) {
-                            this.labeledFaceDescriptors.push(
-                                new faceapi.LabeledFaceDescriptors(name, [detections.descriptor])
-                            );
+                        const imgUrl = `data/face/${this.removeDiacritics(name)}.jpg`;
+                        
+                        try {
+                            this.updateLoadingText(`Xử lý ${processed + 1}/${totalUsers}: ${name}`);
+                            
+                            // Create image with timeout
+                            const img = await this.loadImageWithTimeout(imgUrl, 5000);
+                            const detections = await faceapi
+                                .detectSingleFace(img)
+                                .withFaceLandmarks()
+                                .withFaceDescriptor();
+                            
+                            if (detections) {
+                                processed++;
+                                return new faceapi.LabeledFaceDescriptors(name, [detections.descriptor]);
+                            }
+                            return null;
+                        } catch (error) {
+                            console.warn(`Cannot process ${name}:`, error);
+                            return null;
                         }
-                    } catch (error) {
-                        console.warn(`Cannot process ${name}:`, error);
+                    });
+                    
+                    const batchResults = await Promise.all(batchPromises);
+                    batchResults.forEach(result => {
+                        if (result) this.labeledFaceDescriptors.push(result);
+                    });
+                    
+                    // Small delay between batches to prevent overwhelming
+                    if (index + batchSize < this.allUsersData.length) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
                     }
                 }
+            }
+            
+            // Helper method to load images with timeout
+            loadImageWithTimeout(url, timeout = 5000) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    const timeoutId = setTimeout(() => {
+                        reject(new Error(`Image load timeout: ${url}`));
+                    }, timeout);
+                    
+                    img.onload = () => {
+                        clearTimeout(timeoutId);
+                        resolve(img);
+                    };
+                    
+                    img.onerror = () => {
+                        clearTimeout(timeoutId);
+                        reject(new Error(`Failed to load image: ${url}`));
+                    };
+                    
+                    img.src = url;
+                });
             }
             
             findNameColumn() {
@@ -1164,6 +1356,23 @@
             
             hideSuggestions() {
                 this.suggestionsDropdown.style.display = 'none';
+            }
+        }
+        
+        // Global function for cache clearing
+        function clearCacheAndReload() {
+            if (confirm('Xóa cache sẽ làm trang web tải lại từ đầu. Bạn có chắc chắn?')) {
+                try {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith('face_recognition_')) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                    location.reload();
+                } catch (error) {
+                    console.warn('Cache clear failed:', error);
+                    location.reload();
+                }
             }
         }
         

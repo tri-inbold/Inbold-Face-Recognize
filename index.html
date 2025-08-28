@@ -19,9 +19,10 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #334155;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         
         .app-container {
@@ -32,6 +33,8 @@
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
         
         /* Toggle Header */
@@ -61,9 +64,9 @@
         }
         
         .toggle-button.active {
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-            color: #ffffff;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            color: #334155;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transform: translateY(-1px);
         }
         
@@ -287,6 +290,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow-y: auto;
         }
         
         .about-mode.active {
@@ -345,10 +349,25 @@
             font-size: 20px;
         }
         
-        .about-contact {
-            color: #667eea;
-            font-size: 18px;
+        .contact-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #ffffff;
+            font-size: 16px;
             font-weight: 600;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+        }
+        
+        .contact-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
         }
         
         /* Menu Mode */
@@ -401,32 +420,9 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            height: calc(100vh - 200px);
+            height: calc(100vh - 180px);
             display: flex;
             flex-direction: column;
-        }
-        
-        .menu-header {
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .menu-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .menu-subtitle {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 500;
         }
         
         .menu-content {
@@ -599,8 +595,7 @@
                     </ul>
                 </div>
                 <div class="about-section">
-                    <h3 class="about-title">Contact:</h3>
-                    <p class="about-contact">tri.vu.trong@inbold.com</p>
+                    <a href="mailto:tri.vu.trong@inbold.com" class="contact-button">tri.vu.trong@inbold.com</a>
                 </div>
             </div>
         </div>
@@ -642,10 +637,6 @@
                 <input type="text" id="menu-search-input" placeholder="Tìm kiếm tên nhân viên..." autocomplete="off">
             </div>
             <div class="menu-container">
-                <div class="menu-header">
-                    <div class="menu-title">Danh sách Menu</div>
-                    <div class="menu-subtitle">Menu hôm nay của các nhân viên</div>
-                </div>
                 <div class="menu-content">
                     <table class="menu-table" id="menu-table">
                         <!-- Table content will be populated by JavaScript -->
@@ -683,7 +674,7 @@
                 this.faceMatcher = null;
                 this.isDetecting = false;
                 this.isDesktopMode = false;
-                this.currentThreshold = 0.6;
+                this.currentThreshold = 0.45; // Lowered from 0.6 for better accuracy
                 this.pressTimer = null;
                 this.filteredSuggestions = [];
                 this.selectedSuggestionIndex = -1;
@@ -964,7 +955,10 @@
                     
                     try {
                         const detections = await faceapi
-                            .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                            .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ 
+                                minConfidence: 0.3, // Lowered from 0.5 for better detection
+                                maxResults: 1
+                            }))
                             .withFaceLandmarks()
                             .withFaceDescriptor();
                         

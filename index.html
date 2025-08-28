@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InBold Face Recognition</title>
+    <title>InBold Face Recognition - Enhanced</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
@@ -115,6 +115,92 @@
             background: rgba(30, 41, 59, 0.6);
             color: #e2e8f0;
             transform: translateY(-1px);
+        }
+        
+        /* Accuracy Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            min-width: 280px;
+            display: none;
+        }
+        
+        .settings-panel.show {
+            display: block;
+        }
+        
+        .settings-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .setting-item {
+            margin-bottom: 16px;
+        }
+        
+        .setting-label {
+            display: block;
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .setting-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            background: rgba(51, 65, 85, 0.8);
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .setting-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .confidence-display {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        
+        .settings-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-toggle:hover {
+            transform: scale(1.1);
         }
         
         /* Face Detection Mode */
@@ -270,6 +356,13 @@
             align-items: center;
             justify-content: center;
             font-weight: 500;
+        }
+        
+        .confidence-info {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 10px;
+            font-weight: 400;
         }
         
         /* Desktop Name Input */
@@ -607,6 +700,20 @@
                 font-size: 14px;
                 padding: 16px 20px;
             }
+            
+            .settings-panel {
+                right: 10px;
+                top: 100px;
+                min-width: 240px;
+            }
+            
+            .settings-toggle {
+                right: 10px;
+                top: 60px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -671,6 +778,37 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Settings Toggle Button -->
+        <button class="settings-toggle" id="settings-toggle">⚙</button>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-title">Cài đặt độ chính xác</div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Ngưỡng khớp (0.1-0.8):</label>
+                <input type="range" class="setting-input" id="threshold-slider" 
+                       min="0.1" max="0.8" step="0.05" value="0.35">
+                <div class="confidence-display" id="threshold-display">0.35 (Rất cao)</div>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Độ tin cậy phát hiện (0.1-0.9):</label>
+                <input type="range" class="setting-input" id="detection-confidence" 
+                       min="0.1" max="0.9" step="0.1" value="0.5">
+                <div class="confidence-display" id="detection-display">0.5 (Trung bình)</div>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Cách thức nhận diện:</label>
+                <select class="setting-input" id="recognition-mode">
+                    <option value="auto">Tự động</option>
+                    <option value="multiple">Nhiều lần kiểm tra</option>
+                    <option value="enhanced">Nâng cao (chậm hơn)</option>
+                </select>
+            </div>
+        </div>
+        
         <!-- Toggle Header -->
         <div class="toggle-header" id="toggle-header">
             <button class="toggle-button" id="menu-tab" data-mode="menu">Menu</button>
@@ -682,13 +820,14 @@
         <div class="about-mode" id="about-mode">
             <div class="about-container">
                 <div class="about-section">
-                    <h3 class="about-title">Features:</h3>
+                    <h3 class="about-title">Tính năng nâng cao:</h3>
                     <ul class="about-list">
-                        <li>Real-time face recognition via camera.</li>
-                        <li>Snapshot mode for improved accuracy.</li>
-                        <li>Search for user information by name.</li>
-                        <li>Displays menu on the day of the week.</li>
-                        <li>Intelligent caching for faster loading.</li>
+                        <li>Nhận diện khuôn mặt với độ chính xác cao.</li>
+                        <li>Cài đặt ngưỡng khớp tùy chỉnh.</li>
+                        <li>Nhiều chế độ nhận diện khác nhau.</li>
+                        <li>Hiển thị độ tin cậy của kết quả.</li>
+                        <li>Lưu cache thông minh để tăng tốc.</li>
+                        <li>Tối ưu cho cả desktop và mobile.</li>
                     </ul>
                 </div>
                 <div class="about-section">
@@ -725,6 +864,7 @@
                 <!-- User Info -->
                 <div class="user-info" id="user-info">
                     Đang khởi tạo hệ thống nhận diện...
+                    <div class="confidence-info" id="confidence-info"></div>
                 </div>
             </div>
         </div>
@@ -745,7 +885,7 @@
     </div>
 
     <script>
-        class MinimalFaceRecognition {
+        class EnhancedFaceRecognition {
             constructor() {
                 this.video = document.getElementById('video');
                 this.cameraCircle = document.getElementById('camera-circle');
@@ -756,6 +896,16 @@
                 this.suggestionsDropdown = document.getElementById('suggestions-dropdown');
                 this.userNameDisplay = document.getElementById('user-name');
                 this.userInfoDisplay = document.getElementById('user-info');
+                this.confidenceInfo = document.getElementById('confidence-info');
+                
+                // Settings elements
+                this.settingsToggle = document.getElementById('settings-toggle');
+                this.settingsPanel = document.getElementById('settings-panel');
+                this.thresholdSlider = document.getElementById('threshold-slider');
+                this.thresholdDisplay = document.getElementById('threshold-display');
+                this.detectionConfidence = document.getElementById('detection-confidence');
+                this.detectionDisplay = document.getElementById('detection-display');
+                this.recognitionMode = document.getElementById('recognition-mode');
                 
                 // Toggle elements
                 this.menuTab = document.getElementById('menu-tab');
@@ -773,7 +923,9 @@
                 this.faceMatcher = null;
                 this.isDetecting = false;
                 this.isDesktopMode = false;
-                this.currentThreshold = 0.45;
+                this.currentThreshold = 0.35; // Lower threshold for better accuracy
+                this.detectionThreshold = 0.5;
+                this.currentRecognitionMode = 'auto';
                 this.pressTimer = null;
                 this.filteredSuggestions = [];
                 this.selectedSuggestionIndex = -1;
@@ -781,8 +933,14 @@
                 this.allMenuData = [];
                 this.filteredMenuData = [];
                 
+                // Enhanced recognition variables
+                this.recentMatches = [];
+                this.matchHistory = new Map();
+                this.lastConfidentMatch = null;
+                this.consecutiveMatches = 0;
+                
                 // Cache configuration
-                this.CACHE_VERSION = '1.0';
+                this.CACHE_VERSION = '2.0'; // Updated version for enhanced features
                 this.CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
                 this.MODEL_URL = 'models';
                 this.lastExcelModified = null;
@@ -806,14 +964,212 @@
                 
                 if (this.isDesktopMode) {
                     this.toggleHeader.classList.add('desktop-mode');
-                    // Switch to menu tab if currently on face-detect
                     if (this.currentMode === 'face-detect') {
                         this.switchMode('menu');
                     }
                 }
             }
             
-            // Cache management methods
+            initEventListeners() {
+                // Settings panel
+                this.settingsToggle.addEventListener('click', () => this.toggleSettings());
+                this.thresholdSlider.addEventListener('input', (e) => this.updateThreshold(e));
+                this.detectionConfidence.addEventListener('input', (e) => this.updateDetectionThreshold(e));
+                this.recognitionMode.addEventListener('change', (e) => this.updateRecognitionMode(e));
+                
+                // Close settings when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!this.settingsPanel.contains(e.target) && !this.settingsToggle.contains(e.target)) {
+                        this.settingsPanel.classList.remove('show');
+                    }
+                });
+                
+                // Toggle tabs
+                this.menuTab.addEventListener('click', () => this.switchMode('menu'));
+                this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
+                this.aboutTab.addEventListener('click', () => this.switchMode('about'));
+                
+                // Swipe functionality for mobile
+                this.addSwipeListeners();
+                
+                // Menu search
+                this.menuSearchInput.addEventListener('input', (e) => this.handleMenuSearch(e));
+                
+                // Camera circle interactions
+                this.cameraCircle.addEventListener('click', () => this.toggleDetection());
+                this.cameraCircle.addEventListener('mousedown', () => this.startPressTimer());
+                this.cameraCircle.addEventListener('mouseup', () => this.stopPressTimer());
+                this.cameraCircle.addEventListener('mouseleave', () => this.stopPressTimer());
+                this.cameraCircle.addEventListener('touchstart', () => this.startPressTimer());
+                this.cameraCircle.addEventListener('touchend', () => this.stopPressTimer());
+                
+                // Name input events
+                this.nameInput.addEventListener('input', (e) => this.handleNameInput(e));
+                this.nameInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                this.nameInput.addEventListener('focus', () => this.showSuggestions());
+                this.nameInput.addEventListener('blur', () => setTimeout(() => this.hideSuggestions(), 200));
+            }
+            
+            toggleSettings() {
+                this.settingsPanel.classList.toggle('show');
+            }
+            
+            updateThreshold(e) {
+                this.currentThreshold = parseFloat(e.target.value);
+                this.updateThresholdDisplay();
+                
+                if (this.faceMatcher) {
+                    this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
+                }
+                
+                // Clear match history when threshold changes
+                this.matchHistory.clear();
+                this.recentMatches = [];
+            }
+            
+            updateDetectionThreshold(e) {
+                this.detectionThreshold = parseFloat(e.target.value);
+                this.updateDetectionDisplay();
+            }
+            
+            updateRecognitionMode(e) {
+                this.currentRecognitionMode = e.target.value;
+                // Reset recognition state when mode changes
+                this.recentMatches = [];
+                this.matchHistory.clear();
+                this.consecutiveMatches = 0;
+            }
+            
+            updateThresholdDisplay() {
+                const threshold = this.currentThreshold;
+                let level = 'Trung bình';
+                
+                if (threshold <= 0.25) level = 'Cực cao (có thể bỏ lỡ)';
+                else if (threshold <= 0.35) level = 'Rất cao';
+                else if (threshold <= 0.45) level = 'Cao';
+                else if (threshold <= 0.55) level = 'Trung bình';
+                else level = 'Thấp (có thể sai)';
+                
+                this.thresholdDisplay.textContent = `${threshold} (${level})`;
+            }
+            
+            updateDetectionDisplay() {
+                const confidence = this.detectionThreshold;
+                let level = 'Trung bình';
+                
+                if (confidence <= 0.3) level = 'Thấp';
+                else if (confidence <= 0.5) level = 'Trung bình';
+                else if (confidence <= 0.7) level = 'Cao';
+                else level = 'Rất cao';
+                
+                this.detectionDisplay.textContent = `${confidence} (${level})`;
+            }
+            
+            // Enhanced face matching with multiple checks
+            async performEnhancedMatching(descriptor) {
+                const results = [];
+                
+                // Primary match
+                const primaryMatch = this.faceMatcher.findBestMatch(descriptor);
+                results.push(primaryMatch);
+                
+                if (this.currentRecognitionMode === 'multiple' || this.currentRecognitionMode === 'enhanced') {
+                    // Add slight noise and test again for consistency
+                    for (let i = 0; i < 2; i++) {
+                        const noisyDescriptor = descriptor.map(val => val + (Math.random() - 0.5) * 0.01);
+                        const secondaryMatch = this.faceMatcher.findBestMatch(new Float32Array(noisyDescriptor));
+                        results.push(secondaryMatch);
+                    }
+                }
+                
+                // Analyze results for consistency
+                const validMatches = results.filter(match => match.distance < this.currentThreshold);
+                
+                if (validMatches.length === 0) {
+                    return { label: 'unknown', distance: 1.0, confidence: 0 };
+                }
+                
+                // Find most consistent match
+                const matchCounts = {};
+                validMatches.forEach(match => {
+                    matchCounts[match.label] = (matchCounts[match.label] || 0) + 1;
+                });
+                
+                const mostConsistent = Object.entries(matchCounts)
+                    .sort(([,a], [,b]) => b - a)[0];
+                
+                const bestMatch = validMatches.find(match => match.label === mostConsistent[0]);
+                const confidence = mostConsistent[1] / results.length;
+                
+                return {
+                    label: bestMatch.label,
+                    distance: bestMatch.distance,
+                    confidence: confidence
+                };
+            }
+            
+            // Track match history for stability
+            updateMatchHistory(match) {
+                const now = Date.now();
+                
+                // Clean old entries (older than 3 seconds)
+                this.recentMatches = this.recentMatches.filter(m => now - m.timestamp < 3000);
+                
+                this.recentMatches.push({
+                    label: match.label,
+                    distance: match.distance,
+                    confidence: match.confidence,
+                    timestamp: now
+                });
+                
+                // Update consecutive matches counter
+                if (this.lastConfidentMatch === match.label) {
+                    this.consecutiveMatches++;
+                } else {
+                    this.consecutiveMatches = 1;
+                    this.lastConfidentMatch = match.label;
+                }
+            }
+            
+            // Get stable match result
+            getStableMatch() {
+                if (this.recentMatches.length < 2) return null;
+                
+                const recentWindow = this.recentMatches.slice(-5); // Last 5 matches
+                const matchCounts = {};
+                let totalDistance = 0;
+                let totalConfidence = 0;
+                
+                recentWindow.forEach(match => {
+                    if (match.label !== 'unknown') {
+                        matchCounts[match.label] = (matchCounts[match.label] || 0) + 1;
+                        totalDistance += match.distance;
+                        totalConfidence += match.confidence;
+                    }
+                });
+                
+                const entries = Object.entries(matchCounts);
+                if (entries.length === 0) return null;
+                
+                // Find most frequent match
+                const [label, count] = entries.sort(([,a], [,b]) => b - a)[0];
+                
+                // Require at least 60% consistency for auto mode, 40% for others
+                const requiredConsistency = this.currentRecognitionMode === 'auto' ? 0.6 : 0.4;
+                
+                if (count / recentWindow.length >= requiredConsistency) {
+                    return {
+                        label,
+                        avgDistance: totalDistance / recentWindow.length,
+                        avgConfidence: totalConfidence / recentWindow.length,
+                        stability: count / recentWindow.length
+                    };
+                }
+                
+                return null;
+            }
+            
+            // Cache management methods (unchanged)
             getCacheKey(key) {
                 return `face_recognition_${this.CACHE_VERSION}_${key}`;
             }
@@ -864,7 +1220,6 @@
                 }
             }
             
-            // Check if Excel file has been modified
             async checkExcelModified() {
                 try {
                     const response = await fetch('data/InBold.xlsx', { method: 'HEAD' });
@@ -876,40 +1231,13 @@
                     
                     if (cachedIdentifier !== currentIdentifier) {
                         this.setCache('excel_modified', currentIdentifier);
-                        return true; // File has been modified
+                        return true;
                     }
-                    return false; // File unchanged
+                    return false;
                 } catch (error) {
                     console.warn('Could not check Excel modification:', error);
-                    return true; // Assume modified on error
+                    return true;
                 }
-            }
-            
-            initEventListeners() {
-                // Toggle tabs
-                this.menuTab.addEventListener('click', () => this.switchMode('menu'));
-                this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
-                this.aboutTab.addEventListener('click', () => this.switchMode('about'));
-                
-                // Swipe functionality for mobile
-                this.addSwipeListeners();
-                
-                // Menu search
-                this.menuSearchInput.addEventListener('input', (e) => this.handleMenuSearch(e));
-                
-                // Camera circle interactions
-                this.cameraCircle.addEventListener('click', () => this.toggleDetection());
-                this.cameraCircle.addEventListener('mousedown', () => this.startPressTimer());
-                this.cameraCircle.addEventListener('mouseup', () => this.stopPressTimer());
-                this.cameraCircle.addEventListener('mouseleave', () => this.stopPressTimer());
-                this.cameraCircle.addEventListener('touchstart', () => this.startPressTimer());
-                this.cameraCircle.addEventListener('touchend', () => this.stopPressTimer());
-                
-                // Name input events
-                this.nameInput.addEventListener('input', (e) => this.handleNameInput(e));
-                this.nameInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
-                this.nameInput.addEventListener('focus', () => this.showSuggestions());
-                this.nameInput.addEventListener('blur', () => setTimeout(() => this.hideSuggestions(), 200));
             }
             
             addSwipeListeners() {
@@ -934,18 +1262,14 @@
                 let newIndex;
                 
                 if (swipeDistance > 0) {
-                    // Swipe right - go to previous tab
                     newIndex = currentIndex - 1;
                 } else {
-                    // Swipe left - go to next tab
                     newIndex = currentIndex + 1;
                 }
                 
-                // Handle wrapping
                 if (newIndex < 0) newIndex = this.tabOrder.length - 1;
                 if (newIndex >= this.tabOrder.length) newIndex = 0;
                 
-                // Skip face-detect tab on desktop
                 if (this.isDesktopMode && this.tabOrder[newIndex] === 'face-detect') {
                     if (swipeDistance > 0) {
                         newIndex = newIndex - 1;
@@ -962,12 +1286,10 @@
             switchMode(mode) {
                 this.currentMode = mode;
                 
-                // Update active tab
                 this.menuTab.classList.toggle('active', mode === 'menu');
                 this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
                 this.aboutTab.classList.toggle('active', mode === 'about');
                 
-                // Show/hide modes
                 this.menuMode.classList.toggle('active', mode === 'menu');
                 this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
                 this.aboutMode.classList.toggle('active', mode === 'about');
@@ -984,7 +1306,6 @@
                 const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
                 const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
                 
-                // Store filtered data with only name and current day
                 this.allMenuData = this.allUsersData.map(user => ({
                     [nameColumn]: user[nameColumn] || '',
                     [currentDayKey]: user[currentDayKey] || ''
@@ -1018,10 +1339,8 @@
                 
                 const columns = Object.keys(this.filteredMenuData[0]);
                 
-                // Create table header
                 const headerRow = columns.map(col => `<th>${col}</th>`).join('');
                 
-                // Create table rows
                 const bodyRows = this.filteredMenuData.map(user => {
                     const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
                     return `<tr>${cells}</tr>`;
@@ -1054,7 +1373,9 @@
             
             async init() {
                 try {
-                    // Check if models are cached
+                    this.updateThresholdDisplay();
+                    this.updateDetectionDisplay();
+                    
                     const cachedModels = this.getCache('models_loaded');
                     if (!cachedModels) {
                         this.updateLoadingText('Đang tải models...');
@@ -1062,10 +1383,9 @@
                         this.setCache('models_loaded', true);
                     } else {
                         this.updateLoadingText('Đang tải models từ cache...');
-                        await this.loadModels(); // Still need to load into memory
+                        await this.loadModels();
                     }
                     
-                    // Check if Excel data needs to be reloaded
                     const excelModified = await this.checkExcelModified();
                     let cachedUserData = this.getCache('user_data');
                     
@@ -1078,7 +1398,6 @@
                         this.allUsersData = cachedUserData;
                     }
                     
-                    // Check cached face descriptors
                     let cachedDescriptors = this.getCache('face_descriptors');
                     const cachedDescriptorNames = this.getCache('descriptor_names');
                     
@@ -1087,10 +1406,9 @@
                         this.updateLoadingText('Đang xử lý ảnh...');
                         await this.createLabeledFaceDescriptors();
                         
-                        // Cache the descriptors
                         const descriptorData = this.labeledFaceDescriptors.map(desc => ({
                             label: desc.label,
-                            descriptors: Array.from(desc.descriptors[0]) // Convert Float32Array to regular array
+                            descriptors: Array.from(desc.descriptors[0])
                         }));
                         
                         this.setCache('face_descriptors', descriptorData);
@@ -1106,7 +1424,6 @@
                     
                     this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
                     
-                    // Auto detect device mode
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     
                     if (isMobile) {
@@ -1122,7 +1439,6 @@
                     this.updateLoadingText(`Lỗi: ${error.message}`);
                     console.error('Init error:', error);
                     
-                    // Try to recover by clearing cache
                     if (error.message.includes('cache') || error.message.includes('Cache')) {
                         this.updateLoadingText('Đang xóa cache và thử lại...');
                         this.clearCache();
@@ -1131,7 +1447,6 @@
                 }
             }
             
-            // Validate if cached descriptors match current user data
             validateCachedDescriptors(cachedNames) {
                 const nameColumn = this.findNameColumn();
                 const currentNames = this.allUsersData
@@ -1142,7 +1457,6 @@
                        cachedNames.every(name => currentNames.includes(name));
             }
             
-            // Load cached descriptors back into LabeledFaceDescriptors format
             loadCachedDescriptors(cachedDescriptors) {
                 this.labeledFaceDescriptors = cachedDescriptors.map(cached => {
                     const descriptor = new Float32Array(cached.descriptors);
@@ -1191,7 +1505,7 @@
                 ).length;
                 
                 let processed = 0;
-                const batchSize = 3; // Process 3 images at a time
+                const batchSize = 3;
                 
                 for (let index = 0; index < this.allUsersData.length; index += batchSize) {
                     const batch = this.allUsersData.slice(index, index + batchSize);
@@ -1207,7 +1521,6 @@
                         try {
                             this.updateLoadingText(`Xử lý ${processed + 1}/${totalUsers}: ${name}`);
                             
-                            // Create image with timeout
                             const img = await this.loadImageWithTimeout(imgUrl, 5000);
                             const detections = await faceapi
                                 .detectSingleFace(img)
@@ -1230,14 +1543,12 @@
                         if (result) this.labeledFaceDescriptors.push(result);
                     });
                     
-                    // Small delay between batches to prevent overwhelming
                     if (index + batchSize < this.allUsersData.length) {
                         await new Promise(resolve => setTimeout(resolve, 100));
                     }
                 }
             }
             
-            // Helper method to load images with timeout
             loadImageWithTimeout(url, timeout = 5000) {
                 return new Promise((resolve, reject) => {
                     const img = new Image();
@@ -1272,12 +1583,17 @@
             
             removeDiacritics(str) {
                 if (!str) return '';
-                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'd').replace(/Ð/g, 'D');
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'd').replace(/đ/g, 'D');
             }
             
             async initCamera() {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+                    video: { 
+                        facingMode: 'user', 
+                        width: { ideal: 640 }, 
+                        height: { ideal: 480 },
+                        frameRate: { ideal: 30 } // Higher frame rate for better detection
+                    }
                 });
                 this.video.srcObject = stream;
                 
@@ -1306,41 +1622,76 @@
                 this.cameraCircle.classList.add('detecting');
                 this.updateUserInfo('Đang nhận diện...', 'detecting');
                 
+                // Reset recognition state
+                this.recentMatches = [];
+                this.matchHistory.clear();
+                this.consecutiveMatches = 0;
+                this.lastConfidentMatch = null;
+                
                 const detect = async () => {
                     if (!this.isDetecting) return;
                     
                     try {
                         const detections = await faceapi
                             .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ 
-                                minConfidence: 0.3, // Lowered from 0.5 for better detection
+                                minConfidence: this.detectionThreshold,
                                 maxResults: 1
                             }))
                             .withFaceLandmarks()
                             .withFaceDescriptor();
                         
                         if (detections) {
-                            const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
+                            // Use enhanced matching
+                            const match = await this.performEnhancedMatching(detections.descriptor);
                             
-                            if (bestMatch.distance < this.currentThreshold) {
-                                this.cameraCircle.classList.remove('detecting', 'not-found');
-                                this.cameraCircle.classList.add('found');
-                                this.displayUserInfo(bestMatch.label);
+                            if (match.label !== 'unknown') {
+                                this.updateMatchHistory(match);
+                                
+                                // Check for stable match
+                                const stableMatch = this.getStableMatch();
+                                
+                                if (stableMatch) {
+                                    this.cameraCircle.classList.remove('detecting', 'not-found');
+                                    this.cameraCircle.classList.add('found');
+                                    this.displayUserInfo(stableMatch.label, {
+                                        distance: stableMatch.avgDistance,
+                                        confidence: stableMatch.avgConfidence,
+                                        stability: stableMatch.stability
+                                    });
+                                } else {
+                                    this.cameraCircle.classList.remove('not-found', 'found');
+                                    this.cameraCircle.classList.add('detecting');
+                                    this.updateUserInfo(`Đang xác thực: ${match.label}`, 'detecting', {
+                                        distance: match.distance,
+                                        confidence: match.confidence
+                                    });
+                                }
                             } else {
                                 this.cameraCircle.classList.remove('detecting', 'found');
                                 this.cameraCircle.classList.add('not-found');
                                 this.updateUserInfo('Không nhận diện được', 'not-found');
+                                
+                                // Reset match tracking for unknown faces
+                                this.recentMatches = [];
+                                this.consecutiveMatches = 0;
                             }
                         } else {
                             this.cameraCircle.classList.remove('found', 'not-found');
                             this.cameraCircle.classList.add('detecting');
                             this.updateUserInfo('Không phát hiện khuôn mặt', 'detecting');
+                            
+                            // Reset tracking when no face detected
+                            this.recentMatches = [];
+                            this.consecutiveMatches = 0;
                         }
                     } catch (error) {
                         console.warn('Detection error:', error);
                     }
                     
                     if (this.isDetecting) {
-                        requestAnimationFrame(detect);
+                        // Reduced frame rate for enhanced mode
+                        const delay = this.currentRecognitionMode === 'enhanced' ? 200 : 100;
+                        setTimeout(() => requestAnimationFrame(detect), delay);
                     }
                 };
                 
@@ -1351,6 +1702,12 @@
                 this.isDetecting = false;
                 this.cameraCircle.classList.remove('detecting', 'found', 'not-found');
                 this.updateUserInfo('Nhấn để bắt đầu nhận diện', 'detecting');
+                
+                // Clear tracking state
+                this.recentMatches = [];
+                this.matchHistory.clear();
+                this.consecutiveMatches = 0;
+                this.lastConfidentMatch = null;
             }
             
             async captureAndCompare() {
@@ -1364,17 +1721,22 @@
                     ctx.drawImage(this.video, 0, 0);
                     
                     const detections = await faceapi
-                        .detectSingleFace(canvas)
+                        .detectSingleFace(canvas, new faceapi.SsdMobilenetv1Options({ 
+                            minConfidence: this.detectionThreshold 
+                        }))
                         .withFaceLandmarks()
                         .withFaceDescriptor();
                     
                     if (detections) {
-                        const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
+                        const match = await this.performEnhancedMatching(detections.descriptor);
                         
-                        if (bestMatch.distance < this.currentThreshold) {
+                        if (match.label !== 'unknown') {
                             this.cameraCircle.classList.remove('detecting', 'not-found');
                             this.cameraCircle.classList.add('found');
-                            this.displayUserInfo(bestMatch.label);
+                            this.displayUserInfo(match.label, {
+                                distance: match.distance,
+                                confidence: match.confidence
+                            });
                         } else {
                             this.cameraCircle.classList.remove('detecting', 'found');
                             this.cameraCircle.classList.add('not-found');
@@ -1390,7 +1752,7 @@
                 }
             }
             
-            displayUserInfo(name) {
+            displayUserInfo(name, matchInfo = null) {
                 const nameColumn = this.findNameColumn();
                 const user = this.allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
                 
@@ -1401,17 +1763,47 @@
                     
                     this.userNameDisplay.textContent = user[nameColumn];
                     this.userInfoDisplay.textContent = user[currentDayKey] || 'Không có lịch trình hôm nay';
+                    
+                    // Display confidence information
+                    if (matchInfo) {
+                        const accuracyPercent = Math.round((1 - matchInfo.distance) * 100);
+                        const confidencePercent = Math.round(matchInfo.confidence * 100);
+                        const stabilityPercent = matchInfo.stability ? Math.round(matchInfo.stability * 100) : null;
+                        
+                        let confidenceText = `Độ chính xác: ${accuracyPercent}%`;
+                        if (confidencePercent) {
+                            confidenceText += ` | Tin cậy: ${confidencePercent}%`;
+                        }
+                        if (stabilityPercent) {
+                            confidenceText += ` | Ổn định: ${stabilityPercent}%`;
+                        }
+                        
+                        this.confidenceInfo.textContent = confidenceText;
+                    } else {
+                        this.confidenceInfo.textContent = '';
+                    }
                 } else {
                     this.updateUserInfo('Lỗi dữ liệu', 'not-found');
                 }
             }
             
-            updateUserInfo(name, status = 'detecting') {
+            updateUserInfo(name, status = 'detecting', matchInfo = null) {
                 this.userNameDisplay.textContent = name;
+                
                 if (status === 'detecting') {
                     this.userInfoDisplay.textContent = 'Hướng camera vào khuôn mặt để nhận diện';
                 } else if (status === 'not-found') {
                     this.userInfoDisplay.textContent = 'Vui lòng thử lại hoặc liên hệ quản trị viên';
+                }
+                
+                // Display match info if available
+                if (matchInfo) {
+                    const accuracyPercent = Math.round((1 - matchInfo.distance) * 100);
+                    const confidencePercent = Math.round(matchInfo.confidence * 100);
+                    
+                    this.confidenceInfo.textContent = `Độ chính xác: ${accuracyPercent}% | Tin cậy: ${confidencePercent}%`;
+                } else {
+                    this.confidenceInfo.textContent = '';
                 }
             }
             
@@ -1542,7 +1934,7 @@
         
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            new MinimalFaceRecognition();
+            new EnhancedFaceRecognition();
         });
     </script>
 </body>

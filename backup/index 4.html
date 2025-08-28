@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InBold Face Recognition - Enhanced</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #334155 75%, #1e293b 100%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Add animated background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundMove 20s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundMove {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        /* Toggle Header */
+        .toggle-header {
+            display: flex;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 20px;
+            padding: 6px;
+            margin-bottom: 40px;
+            align-self: center;
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+            position: relative;
+        }
+        
+        .toggle-header.desktop-mode .toggle-button[data-mode="face-detect"] {
+            display: none;
+        }
+        
+        .toggle-button {
+            padding: 14px 28px;
+            background: transparent;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 120px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .toggle-button.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: #ffffff;
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.3),
+                0 4px 6px -2px rgba(59, 130, 246, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .toggle-button:hover:not(.active) {
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        /* Accuracy Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            min-width: 280px;
+            display: none;
+        }
+        
+        .settings-panel.show {
+            display: block;
+        }
+        
+        .settings-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .setting-item {
+            margin-bottom: 16px;
+        }
+        
+        .setting-label {
+            display: block;
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .setting-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            background: rgba(51, 65, 85, 0.8);
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .setting-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .confidence-display {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        
+        .settings-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Face Detection Mode */
+        .face-detect-mode {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+        }
+        
+        .camera-circle {
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 2px 4px 0 rgba(148, 163, 184, 0.1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            border: 3px solid transparent;
+        }
+        
+        .camera-circle::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, 
+                #3b82f6 0%, 
+                #8b5cf6 25%, 
+                #ec4899 50%, 
+                #f59e0b 75%, 
+                #3b82f6 100%);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .camera-circle:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 35px 60px -12px rgba(0, 0, 0, 0.6),
+                inset 0 2px 4px 0 rgba(148, 163, 184, 0.15);
+        }
+        
+        .camera-circle.detecting::before {
+            opacity: 0.8;
+            animation: rotate 3s linear infinite;
+        }
+        
+        .camera-circle.found::before {
+            opacity: 1;
+            background: linear-gradient(45deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .camera-circle.not-found::before {
+            opacity: 1;
+            background: linear-gradient(45deg, #ef4444 0%, #f87171 100%);
+        }
+        
+        .camera-circle.capturing {
+            animation: pulse-capture 0.5s ease-in-out;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse-capture {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            border-radius: 50%;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            z-index: 10;
+        }
+        
+        .loading-text {
+            font-size: 15px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-align: center;
+            max-width: 220px;
+            line-height: 1.6;
+        }
+        
+        .user-display {
+            text-align: center;
+            max-width: 550px;
+        }
+        
+        .user-name {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 20px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 12px 24px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .user-info {
+            font-size: 18px;
+            color: #cbd5e1;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 24px 32px;
+            border-radius: 20px;
+            box-shadow: 
+                0 10px 15px -3px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+        
+        .confidence-info {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 10px;
+            font-weight: 400;
+        }
+        
+        /* Desktop Name Input */
+        .name-input-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-bottom: 20px;
+        }
+        
+        #name-input {
+            width: 100%;
+            padding: 20px 28px;
+            font-size: 18px;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 20px;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            color: #ffffff;
+            text-align: center;
+            outline: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+        }
+        
+        #name-input::placeholder {
+            color: #64748b;
+        }
+        
+        #name-input:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(30, 41, 59, 0.95);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.2),
+                0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 320px;
+            overflow-y: auto;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(148, 163, 184, 0.1);
+            margin-top: 12px;
+            z-index: 20;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 16px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+            font-weight: 500;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-item:hover,
+        .suggestion-item.highlighted {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: #ffffff;
+        }
+        
+        /* About Mode */
+        .about-mode {
+            flex: 1;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .about-mode.active {
+            display: flex;
+        }
+        
+        .about-container {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+        }
+        
+        .about-section {
+            margin-bottom: 32px;
+        }
+        
+        .about-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .about-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .about-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .about-list li {
+            padding: 2px 0;
+            color: #cbd5e1;
+            font-size: 16px;
+            position: relative;
+            padding-left: 28px;
+            line-height: 1.6;
+        }
+        
+        .about-list li:before {
+            content: "•";
+            color: #3b82f6;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+        }
+        
+        .contact-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 16px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.3),
+                0 4px 6px -2px rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .contact-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 20px 25px -5px rgba(59, 130, 246, 0.4),
+                0 10px 10px -5px rgba(59, 130, 246, 0.2);
+        }
+        
+        .contact-button.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            box-shadow: 
+                0 10px 15px -3px rgba(239, 68, 68, 0.3),
+                0 4px 6px -2px rgba(239, 68, 68, 0.2);
+        }
+        
+        .contact-button.danger:hover {
+            box-shadow: 
+                0 20px 25px -5px rgba(239, 68, 68, 0.4),
+                0 10px 10px -5px rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Menu Mode */
+        .menu-mode {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+        
+        .menu-mode.active {
+            display: flex;
+        }
+        
+        .menu-search {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .menu-search input {
+            width: 100%;
+            max-width: 450px;
+            padding: 18px 24px;
+            font-size: 16px;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 20px;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            color: #ffffff;
+            outline: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+        }
+        
+        .menu-search input::placeholder {
+            color: #64748b;
+        }
+        
+        .menu-search input:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(30, 41, 59, 0.95);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.2),
+                0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .menu-container {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+            overflow: hidden;
+            height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .menu-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .menu-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .menu-table th {
+            background: rgba(59, 130, 246, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 24px;
+            text-align: left;
+            font-weight: 700;
+            color: #ffffff;
+            border-bottom: 2px solid rgba(148, 163, 184, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            font-size: 16px;
+        }
+        
+        .menu-table td {
+            padding: 18px 24px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .menu-table tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .status-indicator {
+            display: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 16px;
+            }
+            
+            .camera-circle {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .user-name {
+                font-size: 32px;
+            }
+            
+            .user-info {
+                font-size: 16px;
+                padding: 20px 28px;
+            }
+            
+            #name-input {
+                font-size: 16px;
+                padding: 16px 24px;
+            }
+            
+            .toggle-button {
+                font-size: 14px;
+                padding: 12px 24px;
+                min-width: 100px;
+            }
+            
+            .menu-table th,
+            .menu-table td {
+                padding: 16px 20px;
+                font-size: 14px;
+            }
+            
+            .about-container {
+                padding: 32px 24px;
+            }
+            
+            .menu-search input {
+                font-size: 14px;
+                padding: 16px 20px;
+            }
+            
+            .settings-panel {
+                right: 10px;
+                top: 100px;
+                min-width: 240px;
+            }
+            
+            .settings-toggle {
+                right: 10px;
+                top: 60px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .camera-circle {
+                width: 260px;
+                height: 260px;
+            }
+            
+            .user-name {
+                font-size: 28px;
+            }
+            
+            .user-info {
+                font-size: 14px;
+                padding: 18px 24px;
+            }
+            
+            .toggle-button {
+                font-size: 13px;
+                padding: 10px 20px;
+                min-width: 80px;
+            }
+            
+            .about-container {
+                padding: 24px 20px;
+                margin: 12px;
+            }
+            
+            .menu-search input {
+                font-size: 14px;
+                padding: 14px 18px;
+            }
+            
+            .toggle-header {
+                margin-bottom: 32px;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        .menu-content::-webkit-scrollbar,
+        .suggestions-dropdown::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .menu-content::-webkit-scrollbar-track,
+        .suggestions-dropdown::-webkit-scrollbar-track {
+            background: rgba(148, 163, 184, 0.1);
+            border-radius: 4px;
+        }
+        
+        .menu-content::-webkit-scrollbar-thumb,
+        .suggestions-dropdown::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+        }
+        
+        .menu-content::-webkit-scrollbar-thumb:hover,
+        .suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Settings Toggle Button -->
+        <button class="settings-toggle" id="settings-toggle">⚙</button>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-title">Cài đặt độ chính xác</div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Ngưỡng khớp (0.1-0.8):</label>
+                <input type="range" class="setting-input" id="threshold-slider" 
+                       min="0.1" max="0.8" step="0.05" value="0.35">
+                <div class="confidence-display" id="threshold-display">0.35 (Rất cao)</div>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Độ tin cậy phát hiện (0.1-0.9):</label>
+                <input type="range" class="setting-input" id="detection-confidence" 
+                       min="0.1" max="0.9" step="0.1" value="0.5">
+                <div class="confidence-display" id="detection-display">0.5 (Trung bình)</div>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Cách thức nhận diện:</label>
+                <select class="setting-input" id="recognition-mode">
+                    <option value="auto">Tự động</option>
+                    <option value="multiple">Nhiều lần kiểm tra</option>
+                    <option value="enhanced">Nâng cao (chậm hơn)</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Toggle Header -->
+        <div class="toggle-header" id="toggle-header">
+            <button class="toggle-button" id="menu-tab" data-mode="menu">Menu</button>
+            <button class="toggle-button active" id="face-detect-tab" data-mode="face-detect">Face Detect</button>
+            <button class="toggle-button" id="about-tab" data-mode="about">About</button>
+        </div>
+        
+        <!-- About Mode -->
+        <div class="about-mode" id="about-mode">
+            <div class="about-container">
+                <div class="about-section">
+                    <h3 class="about-title">Tính năng nâng cao:</h3>
+                    <ul class="about-list">
+                        <li>Nhận diện khuôn mặt với độ chính xác cao.</li>
+                        <li>Cài đặt ngưỡng khớp tùy chỉnh.</li>
+                        <li>Nhiều chế độ nhận diện khác nhau.</li>
+                        <li>Hiển thị độ tin cậy của kết quả.</li>
+                        <li>Lưu cache thông minh để tăng tốc.</li>
+                        <li>Tối ưu cho cả desktop và mobile.</li>
+                    </ul>
+                </div>
+                <div class="about-section">
+                    <button class="contact-button danger" onclick="clearCacheAndReload()">Xóa Cache</button>
+                    <a href="mailto:tri.vu.trong@inbold.com" class="contact-button">tri.vu.trong@inbold.com</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Face Detection Mode -->
+        <div class="face-detect-mode" id="face-detect-mode">
+            <!-- Camera Circle -->
+            <div class="camera-circle" id="camera-circle">
+                <video id="video" autoplay muted playsinline></video>
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-text" id="loading-text">Đang khởi tạo...</div>
+                </div>
+            </div>
+            
+            <!-- User Display -->
+            <div class="user-display">
+                <!-- Name Input (Desktop Mode) -->
+                <div class="name-input-container hidden" id="name-input-container">
+                    <input type="text" id="name-input" placeholder="Nhập tên để tìm kiếm..." autocomplete="off">
+                    <div class="suggestions-dropdown" id="suggestions-dropdown"></div>
+                </div>
+                
+                <!-- User Name -->
+                <div class="user-name" id="user-name">
+                    <span class="status-indicator status-detecting"></span>
+                    Chào mừng!
+                </div>
+                
+                <!-- User Info -->
+                <div class="user-info" id="user-info">
+                    Đang khởi tạo hệ thống nhận diện...
+                    <div class="confidence-info" id="confidence-info"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menu Mode -->
+        <div class="menu-mode" id="menu-mode">
+            <div class="menu-search">
+                <input type="text" id="menu-search-input" placeholder="Tìm kiếm tên nhân viên..." autocomplete="off">
+            </div>
+            <div class="menu-container">
+                <div class="menu-content">
+                    <table class="menu-table" id="menu-table">
+                        <!-- Table content will be populated by JavaScript -->
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EnhancedFaceRecognition {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.cameraCircle = document.getElementById('camera-circle');
+                this.loadingOverlay = document.getElementById('loading-overlay');
+                this.loadingText = document.getElementById('loading-text');
+                this.nameInput = document.getElementById('name-input');
+                this.nameInputContainer = document.getElementById('name-input-container');
+                this.suggestionsDropdown = document.getElementById('suggestions-dropdown');
+                this.userNameDisplay = document.getElementById('user-name');
+                this.userInfoDisplay = document.getElementById('user-info');
+                this.confidenceInfo = document.getElementById('confidence-info');
+                
+                // Settings elements
+                this.settingsToggle = document.getElementById('settings-toggle');
+                this.settingsPanel = document.getElementById('settings-panel');
+                this.thresholdSlider = document.getElementById('threshold-slider');
+                this.thresholdDisplay = document.getElementById('threshold-display');
+                this.detectionConfidence = document.getElementById('detection-confidence');
+                this.detectionDisplay = document.getElementById('detection-display');
+                this.recognitionMode = document.getElementById('recognition-mode');
+                
+                // Toggle elements
+                this.menuTab = document.getElementById('menu-tab');
+                this.faceDetectTab = document.getElementById('face-detect-tab');
+                this.aboutTab = document.getElementById('about-tab');
+                this.toggleHeader = document.getElementById('toggle-header');
+                this.menuMode = document.getElementById('menu-mode');
+                this.faceDetectMode = document.getElementById('face-detect-mode');
+                this.aboutMode = document.getElementById('about-mode');
+                this.menuTable = document.getElementById('menu-table');
+                this.menuSearchInput = document.getElementById('menu-search-input');
+                
+                this.allUsersData = [];
+                this.labeledFaceDescriptors = [];
+                this.faceMatcher = null;
+                this.isDetecting = false;
+                this.isDesktopMode = false;
+                this.currentThreshold = 0.35; // Lower threshold for better accuracy
+                this.detectionThreshold = 0.5;
+                this.currentRecognitionMode = 'auto';
+                this.pressTimer = null;
+                this.filteredSuggestions = [];
+                this.selectedSuggestionIndex = -1;
+                this.currentMode = 'face-detect';
+                this.allMenuData = [];
+                this.filteredMenuData = [];
+                
+                // Enhanced recognition variables
+                this.recentMatches = [];
+                this.matchHistory = new Map();
+                this.lastConfidentMatch = null;
+                this.consecutiveMatches = 0;
+                
+                // Cache configuration
+                this.CACHE_VERSION = '2.0'; // Updated version for enhanced features
+                this.CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
+                this.MODEL_URL = 'models';
+                this.lastExcelModified = null;
+                
+                // Swipe detection
+                this.touchStartX = 0;
+                this.touchEndX = 0;
+                this.minSwipeDistance = 50;
+                this.tabOrder = ['menu', 'face-detect', 'about'];
+                
+                this.detectDeviceMode();
+                this.initEventListeners();
+                this.init();
+            }
+            
+            detectDeviceMode() {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                
+                this.isDesktopMode = !isMobile && !hasTouch;
+                
+                if (this.isDesktopMode) {
+                    this.toggleHeader.classList.add('desktop-mode');
+                    if (this.currentMode === 'face-detect') {
+                        this.switchMode('menu');
+                    }
+                }
+            }
+            
+            initEventListeners() {
+                // Settings panel
+                this.settingsToggle.addEventListener('click', () => this.toggleSettings());
+                this.thresholdSlider.addEventListener('input', (e) => this.updateThreshold(e));
+                this.detectionConfidence.addEventListener('input', (e) => this.updateDetectionThreshold(e));
+                this.recognitionMode.addEventListener('change', (e) => this.updateRecognitionMode(e));
+                
+                // Close settings when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!this.settingsPanel.contains(e.target) && !this.settingsToggle.contains(e.target)) {
+                        this.settingsPanel.classList.remove('show');
+                    }
+                });
+                
+                // Toggle tabs
+                this.menuTab.addEventListener('click', () => this.switchMode('menu'));
+                this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
+                this.aboutTab.addEventListener('click', () => this.switchMode('about'));
+                
+                // Swipe functionality for mobile
+                this.addSwipeListeners();
+                
+                // Menu search
+                this.menuSearchInput.addEventListener('input', (e) => this.handleMenuSearch(e));
+                
+                // Camera circle interactions
+                this.cameraCircle.addEventListener('click', () => this.toggleDetection());
+                this.cameraCircle.addEventListener('mousedown', () => this.startPressTimer());
+                this.cameraCircle.addEventListener('mouseup', () => this.stopPressTimer());
+                this.cameraCircle.addEventListener('mouseleave', () => this.stopPressTimer());
+                this.cameraCircle.addEventListener('touchstart', () => this.startPressTimer());
+                this.cameraCircle.addEventListener('touchend', () => this.stopPressTimer());
+                
+                // Name input events
+                this.nameInput.addEventListener('input', (e) => this.handleNameInput(e));
+                this.nameInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                this.nameInput.addEventListener('focus', () => this.showSuggestions());
+                this.nameInput.addEventListener('blur', () => setTimeout(() => this.hideSuggestions(), 200));
+            }
+            
+            toggleSettings() {
+                this.settingsPanel.classList.toggle('show');
+            }
+            
+            updateThreshold(e) {
+                this.currentThreshold = parseFloat(e.target.value);
+                this.updateThresholdDisplay();
+                
+                if (this.faceMatcher) {
+                    this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
+                }
+                
+                // Clear match history when threshold changes
+                this.matchHistory.clear();
+                this.recentMatches = [];
+            }
+            
+            updateDetectionThreshold(e) {
+                this.detectionThreshold = parseFloat(e.target.value);
+                this.updateDetectionDisplay();
+            }
+            
+            updateRecognitionMode(e) {
+                this.currentRecognitionMode = e.target.value;
+                // Reset recognition state when mode changes
+                this.recentMatches = [];
+                this.matchHistory.clear();
+                this.consecutiveMatches = 0;
+            }
+            
+            updateThresholdDisplay() {
+                const threshold = this.currentThreshold;
+                let level = 'Trung bình';
+                
+                if (threshold <= 0.25) level = 'Cực cao (có thể bỏ lỡ)';
+                else if (threshold <= 0.35) level = 'Rất cao';
+                else if (threshold <= 0.45) level = 'Cao';
+                else if (threshold <= 0.55) level = 'Trung bình';
+                else level = 'Thấp (có thể sai)';
+                
+                this.thresholdDisplay.textContent = `${threshold} (${level})`;
+            }
+            
+            updateDetectionDisplay() {
+                const confidence = this.detectionThreshold;
+                let level = 'Trung bình';
+                
+                if (confidence <= 0.3) level = 'Thấp';
+                else if (confidence <= 0.5) level = 'Trung bình';
+                else if (confidence <= 0.7) level = 'Cao';
+                else level = 'Rất cao';
+                
+                this.detectionDisplay.textContent = `${confidence} (${level})`;
+            }
+            
+            // Enhanced face matching with multiple checks
+            async performEnhancedMatching(descriptor) {
+                const results = [];
+                
+                // Primary match
+                const primaryMatch = this.faceMatcher.findBestMatch(descriptor);
+                results.push(primaryMatch);
+                
+                if (this.currentRecognitionMode === 'multiple' || this.currentRecognitionMode === 'enhanced') {
+                    // Add slight noise and test again for consistency
+                    for (let i = 0; i < 2; i++) {
+                        const noisyDescriptor = descriptor.map(val => val + (Math.random() - 0.5) * 0.01);
+                        const secondaryMatch = this.faceMatcher.findBestMatch(new Float32Array(noisyDescriptor));
+                        results.push(secondaryMatch);
+                    }
+                }
+                
+                // Analyze results for consistency
+                const validMatches = results.filter(match => match.distance < this.currentThreshold);
+                
+                if (validMatches.length === 0) {
+                    return { label: 'unknown', distance: 1.0, confidence: 0 };
+                }
+                
+                // Find most consistent match
+                const matchCounts = {};
+                validMatches.forEach(match => {
+                    matchCounts[match.label] = (matchCounts[match.label] || 0) + 1;
+                });
+                
+                const mostConsistent = Object.entries(matchCounts)
+                    .sort(([,a], [,b]) => b - a)[0];
+                
+                const bestMatch = validMatches.find(match => match.label === mostConsistent[0]);
+                const confidence = mostConsistent[1] / results.length;
+                
+                return {
+                    label: bestMatch.label,
+                    distance: bestMatch.distance,
+                    confidence: confidence
+                };
+            }
+            
+            // Track match history for stability
+            updateMatchHistory(match) {
+                const now = Date.now();
+                
+                // Clean old entries (older than 3 seconds)
+                this.recentMatches = this.recentMatches.filter(m => now - m.timestamp < 3000);
+                
+                this.recentMatches.push({
+                    label: match.label,
+                    distance: match.distance,
+                    confidence: match.confidence,
+                    timestamp: now
+                });
+                
+                // Update consecutive matches counter
+                if (this.lastConfidentMatch === match.label) {
+                    this.consecutiveMatches++;
+                } else {
+                    this.consecutiveMatches = 1;
+                    this.lastConfidentMatch = match.label;
+                }
+            }
+            
+            // Get stable match result
+            getStableMatch() {
+                if (this.recentMatches.length < 2) return null;
+                
+                const recentWindow = this.recentMatches.slice(-5); // Last 5 matches
+                const matchCounts = {};
+                let totalDistance = 0;
+                let totalConfidence = 0;
+                
+                recentWindow.forEach(match => {
+                    if (match.label !== 'unknown') {
+                        matchCounts[match.label] = (matchCounts[match.label] || 0) + 1;
+                        totalDistance += match.distance;
+                        totalConfidence += match.confidence;
+                    }
+                });
+                
+                const entries = Object.entries(matchCounts);
+                if (entries.length === 0) return null;
+                
+                // Find most frequent match
+                const [label, count] = entries.sort(([,a], [,b]) => b - a)[0];
+                
+                // Require at least 60% consistency for auto mode, 40% for others
+                const requiredConsistency = this.currentRecognitionMode === 'auto' ? 0.6 : 0.4;
+                
+                if (count / recentWindow.length >= requiredConsistency) {
+                    return {
+                        label,
+                        avgDistance: totalDistance / recentWindow.length,
+                        avgConfidence: totalConfidence / recentWindow.length,
+                        stability: count / recentWindow.length
+                    };
+                }
+                
+                return null;
+            }
+            
+            // Cache management methods (unchanged)
+            getCacheKey(key) {
+                return `face_recognition_${this.CACHE_VERSION}_${key}`;
+            }
+            
+            setCache(key, data) {
+                try {
+                    const cacheData = {
+                        data: data,
+                        timestamp: Date.now(),
+                        version: this.CACHE_VERSION
+                    };
+                    localStorage.setItem(this.getCacheKey(key), JSON.stringify(cacheData));
+                } catch (error) {
+                    console.warn('Cache write failed:', error);
+                }
+            }
+            
+            getCache(key) {
+                try {
+                    const cached = localStorage.getItem(this.getCacheKey(key));
+                    if (!cached) return null;
+                    
+                    const cacheData = JSON.parse(cached);
+                    const isExpired = Date.now() - cacheData.timestamp > this.CACHE_EXPIRY;
+                    const isOldVersion = cacheData.version !== this.CACHE_VERSION;
+                    
+                    if (isExpired || isOldVersion) {
+                        localStorage.removeItem(this.getCacheKey(key));
+                        return null;
+                    }
+                    
+                    return cacheData.data;
+                } catch (error) {
+                    console.warn('Cache read failed:', error);
+                    return null;
+                }
+            }
+            
+            clearCache() {
+                try {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith('face_recognition_')) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                } catch (error) {
+                    console.warn('Cache clear failed:', error);
+                }
+            }
+            
+            async checkExcelModified() {
+                try {
+                    const response = await fetch('data/InBold.xlsx', { method: 'HEAD' });
+                    const lastModified = response.headers.get('Last-Modified');
+                    const etag = response.headers.get('ETag');
+                    
+                    const currentIdentifier = lastModified || etag || Date.now();
+                    const cachedIdentifier = this.getCache('excel_modified');
+                    
+                    if (cachedIdentifier !== currentIdentifier) {
+                        this.setCache('excel_modified', currentIdentifier);
+                        return true;
+                    }
+                    return false;
+                } catch (error) {
+                    console.warn('Could not check Excel modification:', error);
+                    return true;
+                }
+            }
+            
+            addSwipeListeners() {
+                const container = document.querySelector('.app-container');
+                
+                container.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                container.addEventListener('touchend', (e) => {
+                    this.touchEndX = e.changedTouches[0].screenX;
+                    this.handleSwipe();
+                }, { passive: true });
+            }
+            
+            handleSwipe() {
+                const swipeDistance = this.touchEndX - this.touchStartX;
+                
+                if (Math.abs(swipeDistance) < this.minSwipeDistance) return;
+                
+                const currentIndex = this.tabOrder.indexOf(this.currentMode);
+                let newIndex;
+                
+                if (swipeDistance > 0) {
+                    newIndex = currentIndex - 1;
+                } else {
+                    newIndex = currentIndex + 1;
+                }
+                
+                if (newIndex < 0) newIndex = this.tabOrder.length - 1;
+                if (newIndex >= this.tabOrder.length) newIndex = 0;
+                
+                if (this.isDesktopMode && this.tabOrder[newIndex] === 'face-detect') {
+                    if (swipeDistance > 0) {
+                        newIndex = newIndex - 1;
+                        if (newIndex < 0) newIndex = this.tabOrder.length - 1;
+                    } else {
+                        newIndex = newIndex + 1;
+                        if (newIndex >= this.tabOrder.length) newIndex = 0;
+                    }
+                }
+                
+                this.switchMode(this.tabOrder[newIndex]);
+            }
+            
+            switchMode(mode) {
+                this.currentMode = mode;
+                
+                this.menuTab.classList.toggle('active', mode === 'menu');
+                this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
+                this.aboutTab.classList.toggle('active', mode === 'about');
+                
+                this.menuMode.classList.toggle('active', mode === 'menu');
+                this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
+                this.aboutMode.classList.toggle('active', mode === 'about');
+                
+                if (mode === 'menu' && this.allUsersData.length > 0) {
+                    this.prepareMenuData();
+                    this.renderMenuTable();
+                }
+            }
+            
+            prepareMenuData() {
+                const nameColumn = this.findNameColumn();
+                const today = new Date().getDay();
+                const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
+                const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                
+                this.allMenuData = this.allUsersData.map(user => ({
+                    [nameColumn]: user[nameColumn] || '',
+                    [currentDayKey]: user[currentDayKey] || ''
+                })).filter(user => user[nameColumn] && user[nameColumn].trim() !== '');
+                
+                this.filteredMenuData = [...this.allMenuData];
+            }
+            
+            handleMenuSearch(e) {
+                const query = e.target.value.toLowerCase().trim();
+                const nameColumn = this.findNameColumn();
+                
+                if (query === '') {
+                    this.filteredMenuData = [...this.allMenuData];
+                } else {
+                    this.filteredMenuData = this.allMenuData.filter(user => {
+                        const name = user[nameColumn] || '';
+                        return name.toLowerCase().includes(query) || 
+                               this.removeDiacritics(name).toLowerCase().includes(query);
+                    });
+                }
+                
+                this.renderMenuTable();
+            }
+            
+            renderMenuTable() {
+                if (this.filteredMenuData.length === 0) {
+                    this.menuTable.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #64748b; padding: 40px;">Không tìm thấy dữ liệu</td></tr>';
+                    return;
+                }
+                
+                const columns = Object.keys(this.filteredMenuData[0]);
+                
+                const headerRow = columns.map(col => `<th>${col}</th>`).join('');
+                
+                const bodyRows = this.filteredMenuData.map(user => {
+                    const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                
+                this.menuTable.innerHTML = `
+                    <thead>
+                        <tr>${headerRow}</tr>
+                    </thead>
+                    <tbody>
+                        ${bodyRows}
+                    </tbody>
+                `;
+            }
+            
+            startPressTimer() {
+                this.pressTimer = setTimeout(() => {
+                    this.captureAndCompare();
+                    this.cameraCircle.classList.add('capturing');
+                    setTimeout(() => this.cameraCircle.classList.remove('capturing'), 300);
+                }, 1000);
+            }
+            
+            stopPressTimer() {
+                if (this.pressTimer) {
+                    clearTimeout(this.pressTimer);
+                    this.pressTimer = null;
+                }
+            }
+            
+            async init() {
+                try {
+                    this.updateThresholdDisplay();
+                    this.updateDetectionDisplay();
+                    
+                    const cachedModels = this.getCache('models_loaded');
+                    if (!cachedModels) {
+                        this.updateLoadingText('Đang tải models...');
+                        await this.loadModels();
+                        this.setCache('models_loaded', true);
+                    } else {
+                        this.updateLoadingText('Đang tải models từ cache...');
+                        await this.loadModels();
+                    }
+                    
+                    const excelModified = await this.checkExcelModified();
+                    let cachedUserData = this.getCache('user_data');
+                    
+                    if (excelModified || !cachedUserData) {
+                        this.updateLoadingText('Đang tải dữ liệu mới...');
+                        await this.loadUserDataFromExcel();
+                        this.setCache('user_data', this.allUsersData);
+                    } else {
+                        this.updateLoadingText('Đang tải dữ liệu từ cache...');
+                        this.allUsersData = cachedUserData;
+                    }
+                    
+                    let cachedDescriptors = this.getCache('face_descriptors');
+                    const cachedDescriptorNames = this.getCache('descriptor_names');
+                    
+                    if (excelModified || !cachedDescriptors || !cachedDescriptorNames || 
+                        !this.validateCachedDescriptors(cachedDescriptorNames)) {
+                        this.updateLoadingText('Đang xử lý ảnh...');
+                        await this.createLabeledFaceDescriptors();
+                        
+                        const descriptorData = this.labeledFaceDescriptors.map(desc => ({
+                            label: desc.label,
+                            descriptors: Array.from(desc.descriptors[0])
+                        }));
+                        
+                        this.setCache('face_descriptors', descriptorData);
+                        this.setCache('descriptor_names', this.labeledFaceDescriptors.map(d => d.label));
+                    } else {
+                        this.updateLoadingText('Đang tải descriptors từ cache...');
+                        this.loadCachedDescriptors(cachedDescriptors);
+                    }
+                    
+                    if (this.labeledFaceDescriptors.length === 0) {
+                        throw new Error('Không có dữ liệu khuôn mặt');
+                    }
+                    
+                    this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
+                    
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                        await this.initCamera();
+                        this.hideLoading();
+                        this.startDetection();
+                    } else {
+                        this.showDesktopMode();
+                        this.hideLoading();
+                    }
+                    
+                } catch (error) {
+                    this.updateLoadingText(`Lỗi: ${error.message}`);
+                    console.error('Init error:', error);
+                    
+                    if (error.message.includes('cache') || error.message.includes('Cache')) {
+                        this.updateLoadingText('Đang xóa cache và thử lại...');
+                        this.clearCache();
+                        setTimeout(() => location.reload(), 2000);
+                    }
+                }
+            }
+            
+            validateCachedDescriptors(cachedNames) {
+                const nameColumn = this.findNameColumn();
+                const currentNames = this.allUsersData
+                    .filter(user => user[nameColumn] && user[nameColumn].toString().trim() !== '')
+                    .map(user => user[nameColumn]);
+                
+                return cachedNames && cachedNames.length === currentNames.length &&
+                       cachedNames.every(name => currentNames.includes(name));
+            }
+            
+            loadCachedDescriptors(cachedDescriptors) {
+                this.labeledFaceDescriptors = cachedDescriptors.map(cached => {
+                    const descriptor = new Float32Array(cached.descriptors);
+                    return new faceapi.LabeledFaceDescriptors(cached.label, [descriptor]);
+                });
+            }
+            
+            updateLoadingText(text) {
+                this.loadingText.textContent = text;
+            }
+            
+            hideLoading() {
+                this.loadingOverlay.classList.add('hidden');
+            }
+            
+            showDesktopMode() {
+                this.isDesktopMode = true;
+                this.nameInputContainer.classList.remove('hidden');
+                this.video.style.display = 'none';
+                this.updateUserInfo('Nhập tên để tìm kiếm', 'detecting');
+            }
+            
+            async loadModels() {
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(this.MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(this.MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(this.MODEL_URL)
+                ]);
+            }
+            
+            async loadUserDataFromExcel() {
+                const response = await fetch('data/InBold.xlsx');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                this.allUsersData = XLSX.utils.sheet_to_json(worksheet);
+            }
+            
+            async createLabeledFaceDescriptors() {
+                this.labeledFaceDescriptors = [];
+                const nameColumn = this.findNameColumn();
+                const totalUsers = this.allUsersData.filter(user => 
+                    user[nameColumn] && user[nameColumn].toString().trim() !== ''
+                ).length;
+                
+                let processed = 0;
+                const batchSize = 3;
+                
+                for (let index = 0; index < this.allUsersData.length; index += batchSize) {
+                    const batch = this.allUsersData.slice(index, index + batchSize);
+                    
+                    const batchPromises = batch.map(async (user, batchIndex) => {
+                        const actualIndex = index + batchIndex;
+                        const name = user[nameColumn];
+                        
+                        if (!name || name.toString().trim() === '') return null;
+                        
+                        const imgUrl = `data/face/${this.removeDiacritics(name)}.jpg`;
+                        
+                        try {
+                            this.updateLoadingText(`Xử lý ${processed + 1}/${totalUsers}: ${name}`);
+                            
+                            const img = await this.loadImageWithTimeout(imgUrl, 5000);
+                            const detections = await faceapi
+                                .detectSingleFace(img)
+                                .withFaceLandmarks()
+                                .withFaceDescriptor();
+                            
+                            if (detections) {
+                                processed++;
+                                return new faceapi.LabeledFaceDescriptors(name, [detections.descriptor]);
+                            }
+                            return null;
+                        } catch (error) {
+                            console.warn(`Cannot process ${name}:`, error);
+                            return null;
+                        }
+                    });
+                    
+                    const batchResults = await Promise.all(batchPromises);
+                    batchResults.forEach(result => {
+                        if (result) this.labeledFaceDescriptors.push(result);
+                    });
+                    
+                    if (index + batchSize < this.allUsersData.length) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+            }
+            
+            loadImageWithTimeout(url, timeout = 5000) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    const timeoutId = setTimeout(() => {
+                        reject(new Error(`Image load timeout: ${url}`));
+                    }, timeout);
+                    
+                    img.onload = () => {
+                        clearTimeout(timeoutId);
+                        resolve(img);
+                    };
+                    
+                    img.onerror = () => {
+                        clearTimeout(timeoutId);
+                        reject(new Error(`Failed to load image: ${url}`));
+                    };
+                    
+                    img.src = url;
+                });
+            }
+            
+            findNameColumn() {
+                if (this.allUsersData.length === 0) return null;
+                const possibleColumns = ['Tên', 'Họ tên', 'Name', 'Ten'];
+                for (const col of possibleColumns) {
+                    if (this.allUsersData[0].hasOwnProperty(col)) return col;
+                }
+                return Object.keys(this.allUsersData[0])[0];
+            }
+            
+            removeDiacritics(str) {
+                if (!str) return '';
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'd').replace(/đ/g, 'D');
+            }
+            
+            async initCamera() {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user', 
+                        width: { ideal: 640 }, 
+                        height: { ideal: 480 },
+                        frameRate: { ideal: 30 } // Higher frame rate for better detection
+                    }
+                });
+                this.video.srcObject = stream;
+                
+                return new Promise((resolve) => {
+                    this.video.addEventListener('loadedmetadata', resolve);
+                });
+            }
+            
+            toggleDetection() {
+                if (this.pressTimer) return;
+                
+                if (!this.isDesktopMode) {
+                    if (this.isDetecting) {
+                        this.stopDetection();
+                    } else {
+                        this.startDetection();
+                    }
+                }
+            }
+            
+            startDetection() {
+                if (this.isDetecting || this.isDesktopMode) return;
+                
+                this.isDetecting = true;
+                this.cameraCircle.classList.remove('found', 'not-found');
+                this.cameraCircle.classList.add('detecting');
+                this.updateUserInfo('Đang nhận diện...', 'detecting');
+                
+                // Reset recognition state
+                this.recentMatches = [];
+                this.matchHistory.clear();
+                this.consecutiveMatches = 0;
+                this.lastConfidentMatch = null;
+                
+                const detect = async () => {
+                    if (!this.isDetecting) return;
+                    
+                    try {
+                        const detections = await faceapi
+                            .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ 
+                                minConfidence: this.detectionThreshold,
+                                maxResults: 1
+                            }))
+                            .withFaceLandmarks()
+                            .withFaceDescriptor();
+                        
+                        if (detections) {
+                            // Use enhanced matching
+                            const match = await this.performEnhancedMatching(detections.descriptor);
+                            
+                            if (match.label !== 'unknown') {
+                                this.updateMatchHistory(match);
+                                
+                                // Check for stable match
+                                const stableMatch = this.getStableMatch();
+                                
+                                if (stableMatch) {
+                                    this.cameraCircle.classList.remove('detecting', 'not-found');
+                                    this.cameraCircle.classList.add('found');
+                                    this.displayUserInfo(stableMatch.label, {
+                                        distance: stableMatch.avgDistance,
+                                        confidence: stableMatch.avgConfidence,
+                                        stability: stableMatch.stability
+                                    });
+                                } else {
+                                    this.cameraCircle.classList.remove('not-found', 'found');
+                                    this.cameraCircle.classList.add('detecting');
+                                    this.updateUserInfo(`Đang xác thực: ${match.label}`, 'detecting', {
+                                        distance: match.distance,
+                                        confidence: match.confidence
+                                    });
+                                }
+                            } else {
+                                this.cameraCircle.classList.remove('detecting', 'found');
+                                this.cameraCircle.classList.add('not-found');
+                                this.updateUserInfo('Không nhận diện được', 'not-found');
+                                
+                                // Reset match tracking for unknown faces
+                                this.recentMatches = [];
+                                this.consecutiveMatches = 0;
+                            }
+                        } else {
+                            this.cameraCircle.classList.remove('found', 'not-found');
+                            this.cameraCircle.classList.add('detecting');
+                            this.updateUserInfo('Không phát hiện khuôn mặt', 'detecting');
+                            
+                            // Reset tracking when no face detected
+                            this.recentMatches = [];
+                            this.consecutiveMatches = 0;
+                        }
+                    } catch (error) {
+                        console.warn('Detection error:', error);
+                    }
+                    
+                    if (this.isDetecting) {
+                        // Reduced frame rate for enhanced mode
+                        const delay = this.currentRecognitionMode === 'enhanced' ? 200 : 100;
+                        setTimeout(() => requestAnimationFrame(detect), delay);
+                    }
+                };
+                
+                detect();
+            }
+            
+            stopDetection() {
+                this.isDetecting = false;
+                this.cameraCircle.classList.remove('detecting', 'found', 'not-found');
+                this.updateUserInfo('Nhấn để bắt đầu nhận diện', 'detecting');
+                
+                // Clear tracking state
+                this.recentMatches = [];
+                this.matchHistory.clear();
+                this.consecutiveMatches = 0;
+                this.lastConfidentMatch = null;
+            }
+            
+            async captureAndCompare() {
+                if (!this.video.videoWidth || this.isDesktopMode) return;
+                
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = this.video.videoWidth;
+                    canvas.height = this.video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0);
+                    
+                    const detections = await faceapi
+                        .detectSingleFace(canvas, new faceapi.SsdMobilenetv1Options({ 
+                            minConfidence: this.detectionThreshold 
+                        }))
+                        .withFaceLandmarks()
+                        .withFaceDescriptor();
+                    
+                    if (detections) {
+                        const match = await this.performEnhancedMatching(detections.descriptor);
+                        
+                        if (match.label !== 'unknown') {
+                            this.cameraCircle.classList.remove('detecting', 'not-found');
+                            this.cameraCircle.classList.add('found');
+                            this.displayUserInfo(match.label, {
+                                distance: match.distance,
+                                confidence: match.confidence
+                            });
+                        } else {
+                            this.cameraCircle.classList.remove('detecting', 'found');
+                            this.cameraCircle.classList.add('not-found');
+                            this.updateUserInfo('Không nhận diện được', 'not-found');
+                        }
+                    } else {
+                        this.cameraCircle.classList.remove('found', 'not-found');
+                        this.cameraCircle.classList.add('detecting');
+                        this.updateUserInfo('Không phát hiện khuôn mặt', 'not-found');
+                    }
+                } catch (error) {
+                    console.warn('Capture error:', error);
+                }
+            }
+            
+            displayUserInfo(name, matchInfo = null) {
+                const nameColumn = this.findNameColumn();
+                const user = this.allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
+                
+                if (user) {
+                    const today = new Date().getDay();
+                    const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
+                    const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                    
+                    this.userNameDisplay.textContent = user[nameColumn];
+                    this.userInfoDisplay.textContent = user[currentDayKey] || 'Không có lịch trình hôm nay';
+                    
+                    // Display confidence information
+                    if (matchInfo) {
+                        const accuracyPercent = Math.round((1 - matchInfo.distance) * 100);
+                        const confidencePercent = Math.round(matchInfo.confidence * 100);
+                        const stabilityPercent = matchInfo.stability ? Math.round(matchInfo.stability * 100) : null;
+                        
+                        let confidenceText = `Độ chính xác: ${accuracyPercent}%`;
+                        if (confidencePercent) {
+                            confidenceText += ` | Tin cậy: ${confidencePercent}%`;
+                        }
+                        if (stabilityPercent) {
+                            confidenceText += ` | Ổn định: ${stabilityPercent}%`;
+                        }
+                        
+                        this.confidenceInfo.textContent = confidenceText;
+                    } else {
+                        this.confidenceInfo.textContent = '';
+                    }
+                } else {
+                    this.updateUserInfo('Lỗi dữ liệu', 'not-found');
+                }
+            }
+            
+            updateUserInfo(name, status = 'detecting', matchInfo = null) {
+                this.userNameDisplay.textContent = name;
+                
+                if (status === 'detecting') {
+                    this.userInfoDisplay.textContent = 'Hướng camera vào khuôn mặt để nhận diện';
+                } else if (status === 'not-found') {
+                    this.userInfoDisplay.textContent = 'Vui lòng thử lại hoặc liên hệ quản trị viên';
+                }
+                
+                // Display match info if available
+                if (matchInfo) {
+                    const accuracyPercent = Math.round((1 - matchInfo.distance) * 100);
+                    const confidencePercent = Math.round(matchInfo.confidence * 100);
+                    
+                    this.confidenceInfo.textContent = `Độ chính xác: ${accuracyPercent}% | Tin cậy: ${confidencePercent}%`;
+                } else {
+                    this.confidenceInfo.textContent = '';
+                }
+            }
+            
+            // Desktop mode functions
+            handleNameInput(e) {
+                const query = e.target.value.toLowerCase();
+                this.filterSuggestions(query);
+                
+                if (query.length > 0) {
+                    this.showSuggestions();
+                } else {
+                    this.hideSuggestions();
+                }
+            }
+            
+            filterSuggestions(query) {
+                const nameColumn = this.findNameColumn();
+                this.filteredSuggestions = this.allUsersData.filter(user => {
+                    const name = user[nameColumn] || '';
+                    return name.toLowerCase().includes(query) || 
+                           this.removeDiacritics(name).toLowerCase().includes(query);
+                }).slice(0, 8);
+                
+                this.selectedSuggestionIndex = -1;
+                this.renderSuggestions();
+            }
+            
+            renderSuggestions() {
+                const nameColumn = this.findNameColumn();
+                this.suggestionsDropdown.innerHTML = '';
+                
+                this.filteredSuggestions.forEach((user, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = user[nameColumn];
+                    item.addEventListener('click', () => this.selectSuggestion(user[nameColumn]));
+                    this.suggestionsDropdown.appendChild(item);
+                });
+            }
+            
+            handleKeyDown(e) {
+                const items = this.suggestionsDropdown.querySelectorAll('.suggestion-item');
+                
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.selectedSuggestionIndex = Math.min(this.selectedSuggestionIndex + 1, items.length - 1);
+                        this.highlightSuggestion(items);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.selectedSuggestionIndex = Math.max(this.selectedSuggestionIndex - 1, -1);
+                        this.highlightSuggestion(items);
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (this.selectedSuggestionIndex >= 0 && items[this.selectedSuggestionIndex]) {
+                            this.selectSuggestion(items[this.selectedSuggestionIndex].textContent);
+                        } else {
+                            this.searchByInput();
+                        }
+                        break;
+                    case 'Escape':
+                        this.hideSuggestions();
+                        this.nameInput.blur();
+                        break;
+                }
+            }
+            
+            highlightSuggestion(items) {
+                items.forEach((item, index) => {
+                    item.classList.toggle('highlighted', index === this.selectedSuggestionIndex);
+                });
+            }
+            
+            selectSuggestion(name) {
+                this.nameInput.value = name;
+                this.hideSuggestions();
+                this.displayUserInfo(name);
+            }
+            
+            searchByInput() {
+                const name = this.nameInput.value.trim();
+                if (!name) return;
+                
+                const nameColumn = this.findNameColumn();
+                const user = this.allUsersData.find(u => 
+                    u[nameColumn] && (
+                        u[nameColumn].toLowerCase().includes(name.toLowerCase()) ||
+                        this.removeDiacritics(u[nameColumn]).toLowerCase().includes(name.toLowerCase())
+                    )
+                );
+                
+                if (user) {
+                    this.displayUserInfo(user[nameColumn]);
+                } else {
+                    this.updateUserInfo('Không tìm thấy', 'not-found');
+                }
+            }
+            
+            showSuggestions() {
+                if (this.filteredSuggestions.length > 0) {
+                    this.suggestionsDropdown.style.display = 'block';
+                }
+            }
+            
+            hideSuggestions() {
+                this.suggestionsDropdown.style.display = 'none';
+            }
+        }
+        
+        // Global function for cache clearing
+        function clearCacheAndReload() {
+            if (confirm('Xóa cache sẽ làm trang web tải lại từ đầu. Bạn có chắc chắn?')) {
+                try {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith('face_recognition_')) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                    location.reload();
+                } catch (error) {
+                    console.warn('Cache clear failed:', error);
+                    location.reload();
+                }
+            }
+        }
+        
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new EnhancedFaceRecognition();
+        });
+    </script>
+</body>
+</html>

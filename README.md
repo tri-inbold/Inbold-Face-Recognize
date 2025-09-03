@@ -1,6 +1,9 @@
 # InBold Face Recognition
 A real-time face recognition web application that runs entirely in the browser. The app features two modes: camera-based recognition on mobile and search by name on desktop.
+
 https://tri-inbold.github.io/Inbold-Face-Recognize/
+
+https://docs.google.com/spreadsheets/d/18Jp4hEfndh5E412VoNzai49_7P5K6gU_Ki0x5JnMueE/edit?gid=0#gid=0
 
 ## Features
 - Real-time face recognition via camera.

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InBold Face Recognition</title>    
-    <!-- THAY ĐỔI: Đã xóa script của thư viện xlsx -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <style>
@@ -688,6 +687,7 @@
                         <li>Search for user information by name.</li>
                         <li>Displays menu on the day of the week.</li>
                         <li>Intelligent caching for faster loading.</li>
+                        <li>Google Sheets integration for real-time data.</li>
                     </ul>
                 </div>
                 <div class="about-section">
@@ -781,9 +781,14 @@
                 this.filteredMenuData = [];
                 
                 // Cache configuration
-                this.CACHE_VERSION = '1.1'; // THAY ĐỔI: Tăng phiên bản cache để vô hiệu hóa cache cũ
-                this.CACHE_EXPIRY = 1 * 24 * 60 * 60 * 1000; // 1 day - Giảm thời gian cache để dữ liệu được cập nhật thường xuyên hơn
+                this.CACHE_VERSION = '2.0'; // Updated version for Google Sheets
+                this.CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
                 this.MODEL_URL = 'models';
+                
+                // Google Sheets configuration
+                this.SHEET_ID = '18Jp4hEfndh5E412VoNzai49_7P5K6gU_Ki0x5JnMueE';
+                this.API_KEY = 'AIzaSyD_uigMIB6uaqfr-nKfBTxYdmG8zOXT5_Y';
+                this.SHEET_NAME = 'Sheet1';
                 
                 // Swipe detection
                 this.touchStartX = 0;
@@ -862,7 +867,70 @@
                 }
             }
             
-            // THAY ĐỔI: Đã xóa hàm checkExcelModified() không còn cần thiết
+            // Google Sheets API methods
+            async loadUserDataFromGoogleSheets() {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}/values/${this.SHEET_NAME}?key=${this.API_KEY}`;
+                
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Google Sheets API error: ${response.status} - ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.values || data.values.length === 0) {
+                        throw new Error('No data found in Google Sheets');
+                    }
+                    
+                    // Convert to object format similar to Excel
+                    const headers = data.values[0];
+                    const rows = data.values.slice(1);
+                    
+                    this.allUsersData = rows.map(row => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header] = row[index] || '';
+                        });
+                        return obj;
+                    });
+                    
+                    console.log(`Loaded ${this.allUsersData.length} users from Google Sheets`);
+                    return this.allUsersData;
+                    
+                } catch (error) {
+                    console.error('Failed to load from Google Sheets:', error);
+                    throw new Error(`Không thể tải dữ liệu: ${error.message}`);
+                }
+            }
+            
+            // Check if Google Sheets data has been updated
+            async checkSheetsDataUpdated() {
+                try {
+                    // Get sheet metadata to check last modified time
+                    const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}?key=${this.API_KEY}&fields=properties.modifiedTime`;
+                    const response = await fetch(metadataUrl);
+                    
+                    if (response.ok) {
+                        const metadata = await response.json();
+                        const lastModified = metadata.properties?.modifiedTime;
+                        const cachedModified = this.getCache('sheets_modified');
+                        
+                        if (cachedModified !== lastModified) {
+                            this.setCache('sheets_modified', lastModified);
+                            return true; // Data has been modified
+                        }
+                        return false; // Data unchanged
+                    } else {
+                        // If we can't get metadata, assume data might be updated
+                        console.warn('Could not check sheet modification time');
+                        return true;
+                    }
+                } catch (error) {
+                    console.warn('Could not check Google Sheets modification:', error);
+                    return true; // Assume modified on error
+                }
+            }
             
             initEventListeners() {
                 // Toggle tabs
@@ -1044,11 +1112,13 @@
                         await this.loadModels(); // Still need to load into memory
                     }
                     
-                    // THAY ĐỔI: Logic tải dữ liệu người dùng
+                    // Check if Google Sheets data needs to be reloaded
+                    const sheetsDataUpdated = await this.checkSheetsDataUpdated();
                     let cachedUserData = this.getCache('user_data');
-                    if (!cachedUserData) {
-                        this.updateLoadingText('Đang tải dữ liệu từ Google Sheet...');
-                        await this.loadUserDataFromGoogleSheet();
+                    
+                    if (sheetsDataUpdated || !cachedUserData) {
+                        this.updateLoadingText('Đang tải dữ liệu từ Google Sheets...');
+                        await this.loadUserDataFromGoogleSheets();
                         this.setCache('user_data', this.allUsersData);
                     } else {
                         this.updateLoadingText('Đang tải dữ liệu từ cache...');
@@ -1059,7 +1129,8 @@
                     let cachedDescriptors = this.getCache('face_descriptors');
                     const cachedDescriptorNames = this.getCache('descriptor_names');
                     
-                    if (!cachedDescriptors || !cachedDescriptorNames || !this.validateCachedDescriptors(cachedDescriptorNames)) {
+                    if (sheetsDataUpdated || !cachedDescriptors || !cachedDescriptorNames || 
+                        !this.validateCachedDescriptors(cachedDescriptorNames)) {
                         this.updateLoadingText('Đang xử lý ảnh...');
                         await this.createLabeledFaceDescriptors();
                         
@@ -1082,6 +1153,7 @@
                     
                     this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
                     
+                    // Auto detect device mode
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     
                     if (isMobile) {
@@ -1097,6 +1169,7 @@
                     this.updateLoadingText(`Lỗi: ${error.message}`);
                     console.error('Init error:', error);
                     
+                    // Try to recover by clearing cache
                     if (error.message.includes('cache') || error.message.includes('Cache')) {
                         this.updateLoadingText('Đang xóa cache và thử lại...');
                         this.clearCache();
@@ -1107,7 +1180,6 @@
             
             // Validate if cached descriptors match current user data
             validateCachedDescriptors(cachedNames) {
-                if (!this.allUsersData || this.allUsersData.length === 0) return false;
                 const nameColumn = this.findNameColumn();
                 const currentNames = this.allUsersData
                     .filter(user => user[nameColumn] && user[nameColumn].toString().trim() !== '')
@@ -1148,49 +1220,6 @@
                 ]);
             }
             
-            // HÀM MỚI: Thay thế cho loadUserDataFromExcel
-            async loadUserDataFromGoogleSheet() {
-                // !!! THAY THẾ CÁC GIÁ TRỊ SAU BẰNG THÔNG TIN CỦA BẠN !!!
-                const API_KEY = 'AbcDeFgHiJkLmNoPqRsTuVwXyZ'; // Dán API Key của bạn vào đây
-                const SPREADSHEET_ID = 'AIzaSyD_uigMIB6uaqfr-nKfBTxYdmG8zOXT5_Y'; // Dán ID của trang tính vào đây
-                const SHEET_NAME = 'Sheet1'; // Dán tên sheet của bạn vào đây (ví dụ: 'Dữ liệu')
-                
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-                
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`Google Sheets API error: ${errorData.error.message}`);
-                    }
-                    
-                    const data = await response.json();
-                    const values = data.values;
-                    
-                    if (!values || values.length < 2) {
-                        this.allUsersData = [];
-                        return;
-                    }
-                    
-                    // Chuyển đổi mảng các mảng thành mảng các đối tượng
-                    const headers = values[0];
-                    const rows = values.slice(1);
-                    
-                    this.allUsersData = rows.map(row => {
-                        const userObject = {};
-                        headers.forEach((header, index) => {
-                            userObject[header] = row[index] || '';
-                        });
-                        return userObject;
-                    });
-                } catch (error) {
-                    console.error('Failed to load data from Google Sheet:', error);
-                    throw new Error('Không thể tải dữ liệu. Kiểm tra lại API Key hoặc Spreadsheet ID.');
-                }
-            }
-            
-            // THAY ĐỔI: Đã xóa hàm loadUserDataFromExcel()
-
             async createLabeledFaceDescriptors() {
                 this.labeledFaceDescriptors = [];
                 const nameColumn = this.findNameColumn();
@@ -1199,12 +1228,13 @@
                 ).length;
                 
                 let processed = 0;
-                const batchSize = 3; 
+                const batchSize = 3; // Process 3 images at a time
                 
                 for (let index = 0; index < this.allUsersData.length; index += batchSize) {
                     const batch = this.allUsersData.slice(index, index + batchSize);
                     
                     const batchPromises = batch.map(async (user, batchIndex) => {
+                        const actualIndex = index + batchIndex;
                         const name = user[nameColumn];
                         
                         if (!name || name.toString().trim() === '') return null;
@@ -1214,6 +1244,7 @@
                         try {
                             this.updateLoadingText(`Xử lý ${processed + 1}/${totalUsers}: ${name}`);
                             
+                            // Create image with timeout
                             const img = await this.loadImageWithTimeout(imgUrl, 5000);
                             const detections = await faceapi
                                 .detectSingleFace(img)
@@ -1236,12 +1267,14 @@
                         if (result) this.labeledFaceDescriptors.push(result);
                     });
                     
+                    // Small delay between batches to prevent overwhelming
                     if (index + batchSize < this.allUsersData.length) {
                         await new Promise(resolve => setTimeout(resolve, 100));
                     }
                 }
             }
             
+            // Helper method to load images with timeout
             loadImageWithTimeout(url, timeout = 5000) {
                 return new Promise((resolve, reject) => {
                     const img = new Image();
@@ -1276,7 +1309,7 @@
             
             removeDiacritics(str) {
                 if (!str) return '';
-                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'd').replace(/Ð/g, 'D');
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
             }
             
             async initCamera() {
@@ -1316,7 +1349,7 @@
                     try {
                         const detections = await faceapi
                             .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ 
-                                minConfidence: 0.3,
+                                minConfidence: 0.3, // Lowered from 0.5 for better detection
                                 maxResults: 1
                             }))
                             .withFaceLandmarks()

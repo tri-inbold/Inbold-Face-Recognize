@@ -1151,8 +1151,8 @@
             // HÀM MỚI: Thay thế cho loadUserDataFromExcel
             async loadUserDataFromGoogleSheet() {
                 // !!! THAY THẾ CÁC GIÁ TRỊ SAU BẰNG THÔNG TIN CỦA BẠN !!!
-                const API_KEY = 'AIzaSyD_uigMIB6uaqfr-nKfBTxYdmG8zOXT5_Y'; // Dán API Key của bạn vào đây
-                const SPREADSHEET_ID = 'AbcDeFgHiJkLmNoPqRsTuVwXyZ'; // Dán ID của trang tính vào đây
+                const API_KEY = 'AbcDeFgHiJkLmNoPqRsTuVwXyZ'; // Dán API Key của bạn vào đây
+                const SPREADSHEET_ID = 'AIzaSyD_uigMIB6uaqfr-nKfBTxYdmG8zOXT5_Y'; // Dán ID của trang tính vào đây
                 const SHEET_NAME = 'Sheet1'; // Dán tên sheet của bạn vào đây (ví dụ: 'Dữ liệu')
                 
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;

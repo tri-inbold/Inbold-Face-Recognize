@@ -81,10 +81,6 @@
             position: relative;
         }
         
-        .toggle-header.desktop-mode .toggle-button[data-mode="face-detect"] {
-            display: none;
-        }
-        
         .toggle-button {
             padding: 14px 28px;
             background: transparent;
@@ -115,10 +111,132 @@
             transform: translateY(-1px);
         }
         
+        /* Today Mode */
+        .today-mode {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+        }
+        
+        .today-menu-box {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .today-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .today-menu-content {
+            font-size: 20px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .eaten-button {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 10px 15px -3px rgba(16, 185, 129, 0.3),
+                0 4px 6px -2px rgba(16, 185, 129, 0.2);
+        }
+        
+        .eaten-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 20px 25px -5px rgba(16, 185, 129, 0.4),
+                0 10px 10px -5px rgba(16, 185, 129, 0.2);
+        }
+        
+        .eaten-button:disabled {
+            background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .user-selector {
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+        }
+        
+        .user-select-dropdown {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            color: #ffffff;
+            outline: none;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .user-select-dropdown:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(30, 41, 59, 0.95);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.2),
+                0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .clear-cache-text {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #64748b;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+        
+        .clear-cache-text:hover {
+            color: #ef4444;
+        }
+        
         /* Face Detection Mode */
         .face-detect-mode {
             flex: 1;
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -346,114 +464,6 @@
             color: #ffffff;
         }
         
-        /* About Mode */
-        .about-mode {
-            flex: 1;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .about-mode.active {
-            display: flex;
-        }
-        
-        .about-container {
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 24px;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(148, 163, 184, 0.1);
-            padding: 40px;
-            max-width: 550px;
-            width: 100%;
-        }
-        
-        .about-section {
-            margin-bottom: 32px;
-        }
-        
-        .about-section:last-child {
-            margin-bottom: 0;
-        }
-        
-        .about-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .about-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .about-list li {
-            padding: 2px 0;
-            color: #cbd5e1;
-            font-size: 16px;
-            position: relative;
-            padding-left: 28px;
-            line-height: 1.6;
-        }
-        
-        .about-list li:before {
-            content: "•";
-            color: #3b82f6;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-            font-size: 20px;
-        }
-        
-        .contact-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 600;
-            padding: 14px 28px;
-            border: none;
-            border-radius: 16px;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 10px 15px -3px rgba(59, 130, 246, 0.3),
-                0 4px 6px -2px rgba(59, 130, 246, 0.2);
-            cursor: pointer;
-            margin-right: 12px;
-            margin-bottom: 12px;
-        }
-        
-        .contact-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 
-                0 20px 25px -5px rgba(59, 130, 246, 0.4),
-                0 10px 10px -5px rgba(59, 130, 246, 0.2);
-        }
-        
-        .contact-button.danger {
-            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-            box-shadow: 
-                0 10px 15px -3px rgba(239, 68, 68, 0.3),
-                0 4px 6px -2px rgba(239, 68, 68, 0.2);
-        }
-        
-        .contact-button.danger:hover {
-            box-shadow: 
-                0 20px 25px -5px rgba(239, 68, 68, 0.4),
-                0 10px 10px -5px rgba(239, 68, 68, 0.2);
-        }
-        
         /* Menu Mode */
         .menu-mode {
             flex: 1;
@@ -552,6 +562,20 @@
             background: rgba(59, 130, 246, 0.05);
         }
         
+        .eaten-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        
+        .checkbox-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
         .status-indicator {
             display: none;
         }
@@ -597,13 +621,22 @@
                 font-size: 14px;
             }
             
-            .about-container {
+            .today-menu-box {
                 padding: 32px 24px;
             }
             
             .menu-search input {
                 font-size: 14px;
                 padding: 16px 20px;
+            }
+            
+            .today-menu-content {
+                font-size: 18px;
+            }
+            
+            .eaten-button {
+                font-size: 16px;
+                padding: 14px 32px;
             }
         }
         
@@ -628,7 +661,7 @@
                 min-width: 80px;
             }
             
-            .about-container {
+            .today-menu-box {
                 padding: 24px 20px;
                 margin: 12px;
             }
@@ -640,6 +673,15 @@
             
             .toggle-header {
                 margin-bottom: 32px;
+            }
+            
+            .today-menu-content {
+                font-size: 16px;
+            }
+            
+            .eaten-button {
+                font-size: 14px;
+                padding: 12px 28px;
             }
         }
         
@@ -671,28 +713,45 @@
     <div class="app-container">
         <!-- Toggle Header -->
         <div class="toggle-header" id="toggle-header">
+            <button class="toggle-button active" id="today-tab" data-mode="today">Today</button>
             <button class="toggle-button" id="menu-tab" data-mode="menu">Menu</button>
-            <button class="toggle-button active" id="face-detect-tab" data-mode="face-detect">Face Detect</button>
-            <button class="toggle-button" id="about-tab" data-mode="about">About</button>
+            <button class="toggle-button" id="face-detect-tab" data-mode="face-detect">Face Detect</button>
         </div>
         
-        <!-- About Mode -->
-        <div class="about-mode" id="about-mode">
-            <div class="about-container">
-                <div class="about-section">
-                    <h3 class="about-title">Features:</h3>
-                    <ul class="about-list">
-                        <li>Real-time face recognition via camera.</li>
-                        <li>Snapshot mode for improved accuracy.</li>
-                        <li>Search for user information by name.</li>
-                        <li>Displays menu on the day of the week.</li>
-                        <li>Intelligent caching for faster loading.</li>
-                        <li>Google Sheets integration for real-time data.</li>
-                    </ul>
+        <!-- Today Mode -->
+        <div class="today-mode" id="today-mode">
+            <div class="today-menu-box">
+                <h2 class="today-title" id="today-title">Món ăn hôm nay</h2>
+                <div class="today-menu-content" id="today-menu-content">
+                    Đang tải thông tin...
                 </div>
-                <div class="about-section">
-                    <button class="contact-button danger" onclick="clearCacheAndReload()">Xóa Cache</button>
-                    <a href="mailto:tri.vu.trong@inbold.com" class="contact-button">tri.vu.trong@inbold.com</a>
+            </div>
+            
+            <button class="eaten-button" id="eaten-button" disabled>
+                Đã ăn
+            </button>
+            
+            <div class="user-selector">
+                <select class="user-select-dropdown" id="user-select">
+                    <option value="">Chọn tên...</option>
+                </select>
+            </div>
+            
+            <div class="clear-cache-text" onclick="clearCacheAndReload()">
+                Xóa Cache
+            </div>
+        </div>
+        
+        <!-- Menu Mode -->
+        <div class="menu-mode" id="menu-mode">
+            <div class="menu-search">
+                <input type="text" id="menu-search-input" placeholder="Tìm kiếm tên nhân viên..." autocomplete="off">
+            </div>
+            <div class="menu-container">
+                <div class="menu-content">
+                    <table class="menu-table" id="menu-table">
+                        <!-- Table content will be populated by JavaScript -->
+                    </table>
                 </div>
             </div>
         </div>
@@ -723,21 +782,7 @@
                 
                 <!-- User Info -->
                 <div class="user-info" id="user-info">
-                    Đang khởi tạo hệ thống nhận diện...
-                </div>
-            </div>
-        </div>
-        
-        <!-- Menu Mode -->
-        <div class="menu-mode" id="menu-mode">
-            <div class="menu-search">
-                <input type="text" id="menu-search-input" placeholder="Tìm kiếm tên nhân viên..." autocomplete="off">
-            </div>
-            <div class="menu-container">
-                <div class="menu-content">
-                    <table class="menu-table" id="menu-table">
-                        <!-- Table content will be populated by JavaScript -->
-                    </table>
+                    Nhấn tab để khởi tạo hệ thống nhận diện...
                 </div>
             </div>
         </div>
@@ -757,15 +802,20 @@
                 this.userInfoDisplay = document.getElementById('user-info');
                 
                 // Toggle elements
+                this.todayTab = document.getElementById('today-tab');
                 this.menuTab = document.getElementById('menu-tab');
                 this.faceDetectTab = document.getElementById('face-detect-tab');
-                this.aboutTab = document.getElementById('about-tab');
-                this.toggleHeader = document.getElementById('toggle-header');
+                this.todayMode = document.getElementById('today-mode');
                 this.menuMode = document.getElementById('menu-mode');
                 this.faceDetectMode = document.getElementById('face-detect-mode');
-                this.aboutMode = document.getElementById('about-mode');
                 this.menuTable = document.getElementById('menu-table');
                 this.menuSearchInput = document.getElementById('menu-search-input');
+                
+                // Today mode elements
+                this.todayTitle = document.getElementById('today-title');
+                this.todayMenuContent = document.getElementById('today-menu-content');
+                this.eatenButton = document.getElementById('eaten-button');
+                this.userSelect = document.getElementById('user-select');
                 
                 this.allUsersData = [];
                 this.labeledFaceDescriptors = [];
@@ -776,12 +826,14 @@
                 this.pressTimer = null;
                 this.filteredSuggestions = [];
                 this.selectedSuggestionIndex = -1;
-                this.currentMode = 'face-detect';
+                this.currentMode = 'today';
                 this.allMenuData = [];
                 this.filteredMenuData = [];
+                this.selectedUser = '';
+                this.faceDetectInitialized = false;
                 
                 // Cache configuration
-                this.CACHE_VERSION = '2.0'; // Updated version for Google Sheets
+                this.CACHE_VERSION = '2.0';
                 this.CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
                 this.MODEL_URL = 'models';
                 
@@ -790,11 +842,9 @@
                 this.API_KEY = 'AIzaSyD_uigMIB6uaqfr-nKfBTxYdmG8zOXT5_Y';
                 this.SHEET_NAME = 'Sheet1';
                 
-                // Swipe detection
-                this.touchStartX = 0;
-                this.touchEndX = 0;
-                this.minSwipeDistance = 50;
-                this.tabOrder = ['menu', 'face-detect', 'about'];
+                // Status update timer
+                this.statusUpdateInterval = null;
+                this.lastStatusUpdate = 0;
                 
                 this.detectDeviceMode();
                 this.initEventListeners();
@@ -806,14 +856,6 @@
                 const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
                 
                 this.isDesktopMode = !isMobile && !hasTouch;
-                
-                if (this.isDesktopMode) {
-                    this.toggleHeader.classList.add('desktop-mode');
-                    // Switch to menu tab if currently on face-detect
-                    if (this.currentMode === 'face-detect') {
-                        this.switchMode('menu');
-                    }
-                }
             }
             
             // Cache management methods
@@ -887,8 +929,8 @@
                     const headers = data.values[0];
                     const rows = data.values.slice(1);
                     
-                    this.allUsersData = rows.map(row => {
-                        const obj = {};
+                    this.allUsersData = rows.map((row, index) => {
+                        const obj = { _rowIndex: index + 2 }; // +2 because sheets are 1-indexed and we skip header
                         headers.forEach((header, index) => {
                             obj[header] = row[index] || '';
                         });
@@ -901,6 +943,100 @@
                 } catch (error) {
                     console.error('Failed to load from Google Sheets:', error);
                     throw new Error(`Không thể tải dữ liệu: ${error.message}`);
+                }
+            }
+            
+            // Update eaten status in Google Sheets
+            async updateEatenStatus(userName, eaten = true) {
+                try {
+                    const nameColumn = this.findNameColumn();
+                    const user = this.allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === userName.toLowerCase());
+                    
+                    if (!user) {
+                        throw new Error('Không tìm thấy người dùng');
+                    }
+                    
+                    const rowIndex = user._rowIndex;
+                    const statusColumn = this.getStatusColumnLetter(); // Column H (8th column)
+                    const range = `${this.SHEET_NAME}!${statusColumn}${rowIndex}`;
+                    const value = eaten ? 'Đã ăn' : '';
+                    
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}/values/${range}?valueInputOption=RAW&key=${this.API_KEY}`;
+                    
+                    const response = await fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            values: [[value]]
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to update: ${response.status}`);
+                    }
+                    
+                    // Update local data
+                    const statusColumnName = this.getStatusColumnName();
+                    user[statusColumnName] = value;
+                    
+                    return true;
+                    
+                } catch (error) {
+                    console.error('Failed to update eaten status:', error);
+                    throw error;
+                }
+            }
+            
+            // Get status column letter (8th column = H)
+            getStatusColumnLetter() {
+                return 'H';
+            }
+            
+            // Get status column name from headers
+            getStatusColumnName() {
+                if (this.allUsersData.length === 0) return 'Status';
+                const headers = Object.keys(this.allUsersData[0]).filter(key => key !== '_rowIndex');
+                return headers[7] || 'Status'; // 8th column (0-indexed = 7)
+            }
+            
+            // Reset daily eaten status (called at start of new day)
+            async resetDailyStatus() {
+                try {
+                    const today = new Date().toDateString();
+                    const lastReset = this.getCache('last_reset_date');
+                    
+                    if (lastReset === today) {
+                        return; // Already reset today
+                    }
+                    
+                    // Clear all status values
+                    const statusColumn = this.getStatusColumnLetter();
+                    const range = `${this.SHEET_NAME}!${statusColumn}2:${statusColumn}${this.allUsersData.length + 1}`;
+                    
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}/values/${range}:clear?key=${this.API_KEY}`;
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        // Update local data
+                        const statusColumnName = this.getStatusColumnName();
+                        this.allUsersData.forEach(user => {
+                            user[statusColumnName] = '';
+                        });
+                        
+                        this.setCache('last_reset_date', today);
+                        console.log('Daily status reset completed');
+                    }
+                    
+                } catch (error) {
+                    console.warn('Failed to reset daily status:', error);
                 }
             }
             
@@ -934,17 +1070,18 @@
             
             initEventListeners() {
                 // Toggle tabs
+                this.todayTab.addEventListener('click', () => this.switchMode('today'));
                 this.menuTab.addEventListener('click', () => this.switchMode('menu'));
                 this.faceDetectTab.addEventListener('click', () => this.switchMode('face-detect'));
-                this.aboutTab.addEventListener('click', () => this.switchMode('about'));
-                
-                // Swipe functionality for mobile
-                this.addSwipeListeners();
                 
                 // Menu search
                 this.menuSearchInput.addEventListener('input', (e) => this.handleMenuSearch(e));
                 
-                // Camera circle interactions
+                // Today mode events
+                this.eatenButton.addEventListener('click', () => this.handleEatenClick());
+                this.userSelect.addEventListener('change', (e) => this.handleUserSelect(e));
+                
+                // Face detect events
                 this.cameraCircle.addEventListener('click', () => this.toggleDetection());
                 this.cameraCircle.addEventListener('mousedown', () => this.startPressTimer());
                 this.cameraCircle.addEventListener('mouseup', () => this.stopPressTimer());
@@ -959,69 +1096,77 @@
                 this.nameInput.addEventListener('blur', () => setTimeout(() => this.hideSuggestions(), 200));
             }
             
-            addSwipeListeners() {
-                const container = document.querySelector('.app-container');
-                
-                container.addEventListener('touchstart', (e) => {
-                    this.touchStartX = e.changedTouches[0].screenX;
-                }, { passive: true });
-                
-                container.addEventListener('touchend', (e) => {
-                    this.touchEndX = e.changedTouches[0].screenX;
-                    this.handleSwipe();
-                }, { passive: true });
-            }
-            
-            handleSwipe() {
-                const swipeDistance = this.touchEndX - this.touchStartX;
-                
-                if (Math.abs(swipeDistance) < this.minSwipeDistance) return;
-                
-                const currentIndex = this.tabOrder.indexOf(this.currentMode);
-                let newIndex;
-                
-                if (swipeDistance > 0) {
-                    // Swipe right - go to previous tab
-                    newIndex = currentIndex - 1;
-                } else {
-                    // Swipe left - go to next tab
-                    newIndex = currentIndex + 1;
-                }
-                
-                // Handle wrapping
-                if (newIndex < 0) newIndex = this.tabOrder.length - 1;
-                if (newIndex >= this.tabOrder.length) newIndex = 0;
-                
-                // Skip face-detect tab on desktop
-                if (this.isDesktopMode && this.tabOrder[newIndex] === 'face-detect') {
-                    if (swipeDistance > 0) {
-                        newIndex = newIndex - 1;
-                        if (newIndex < 0) newIndex = this.tabOrder.length - 1;
-                    } else {
-                        newIndex = newIndex + 1;
-                        if (newIndex >= this.tabOrder.length) newIndex = 0;
-                    }
-                }
-                
-                this.switchMode(this.tabOrder[newIndex]);
-            }
-            
             switchMode(mode) {
                 this.currentMode = mode;
                 
                 // Update active tab
+                this.todayTab.classList.toggle('active', mode === 'today');
                 this.menuTab.classList.toggle('active', mode === 'menu');
                 this.faceDetectTab.classList.toggle('active', mode === 'face-detect');
-                this.aboutTab.classList.toggle('active', mode === 'about');
                 
                 // Show/hide modes
+                this.todayMode.style.display = mode === 'today' ? 'flex' : 'none';
                 this.menuMode.classList.toggle('active', mode === 'menu');
                 this.faceDetectMode.style.display = mode === 'face-detect' ? 'flex' : 'none';
-                this.aboutMode.classList.toggle('active', mode === 'about');
                 
                 if (mode === 'menu' && this.allUsersData.length > 0) {
                     this.prepareMenuData();
                     this.renderMenuTable();
+                    this.startStatusUpdates();
+                } else if (mode === 'face-detect' && !this.faceDetectInitialized) {
+                    this.initFaceDetection();
+                } else if (mode === 'today') {
+                    this.stopStatusUpdates();
+                } else {
+                    this.stopStatusUpdates();
+                }
+            }
+            
+            // Start periodic status updates for menu mode
+            startStatusUpdates() {
+                this.stopStatusUpdates(); // Clear any existing interval
+                
+                this.statusUpdateInterval = setInterval(async () => {
+                    try {
+                        await this.refreshEatenStatus();
+                        this.renderMenuTable();
+                    } catch (error) {
+                        console.warn('Failed to update status:', error);
+                    }
+                }, 30000); // Update every 30 seconds
+            }
+            
+            stopStatusUpdates() {
+                if (this.statusUpdateInterval) {
+                    clearInterval(this.statusUpdateInterval);
+                    this.statusUpdateInterval = null;
+                }
+            }
+            
+            // Refresh eaten status from Google Sheets
+            async refreshEatenStatus() {
+                const now = Date.now();
+                if (now - this.lastStatusUpdate < 25000) return; // Prevent too frequent updates
+                
+                this.lastStatusUpdate = now;
+                
+                try {
+                    const statusColumn = this.getStatusColumnLetter();
+                    const range = `${this.SHEET_NAME}!${statusColumn}2:${statusColumn}${this.allUsersData.length + 1}`;
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}/values/${range}?key=${this.API_KEY}`;
+                    
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const values = data.values || [];
+                        
+                        const statusColumnName = this.getStatusColumnName();
+                        this.allUsersData.forEach((user, index) => {
+                            user[statusColumnName] = values[index] ? values[index][0] || '' : '';
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Failed to refresh status:', error);
                 }
             }
             
@@ -1030,11 +1175,13 @@
                 const today = new Date().getDay();
                 const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
                 const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                const statusColumnName = this.getStatusColumnName();
                 
-                // Store filtered data with only name and current day
+                // Store filtered data with name, current day, and status
                 this.allMenuData = this.allUsersData.map(user => ({
                     [nameColumn]: user[nameColumn] || '',
-                    [currentDayKey]: user[currentDayKey] || ''
+                    [currentDayKey]: user[currentDayKey] || '',
+                    [statusColumnName]: user[statusColumnName] || ''
                 })).filter(user => user[nameColumn] && user[nameColumn].trim() !== '');
                 
                 this.filteredMenuData = [...this.allMenuData];
@@ -1059,19 +1206,35 @@
             
             renderMenuTable() {
                 if (this.filteredMenuData.length === 0) {
-                    this.menuTable.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #64748b; padding: 40px;">Không tìm thấy dữ liệu</td></tr>';
+                    this.menuTable.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b; padding: 40px;">Không tìm thấy dữ liệu</td></tr>';
                     return;
                 }
                 
+                const nameColumn = this.findNameColumn();
                 const columns = Object.keys(this.filteredMenuData[0]);
+                const statusColumnName = this.getStatusColumnName();
                 
                 // Create table header
-                const headerRow = columns.map(col => `<th>${col}</th>`).join('');
+                const headerRow = `<th>Trạng thái</th>` + columns.filter(col => col !== statusColumnName).map(col => `<th>${col}</th>`).join('');
                 
                 // Create table rows
                 const bodyRows = this.filteredMenuData.map(user => {
-                    const cells = columns.map(col => `<td>${user[col] || ''}</td>`).join('');
-                    return `<tr>${cells}</tr>`;
+                    const isEaten = user[statusColumnName] && user[statusColumnName].trim() !== '';
+                    const checkboxCell = `
+                        <td>
+                            <div class="checkbox-cell">
+                                <input type="checkbox" class="eaten-checkbox" 
+                                       ${isEaten ? 'checked' : ''} 
+                                       data-user="${user[nameColumn]}"
+                                       onchange="window.app.handleMenuCheckbox(this)">
+                            </div>
+                        </td>
+                    `;
+                    
+                    const dataCells = columns.filter(col => col !== statusColumnName)
+                        .map(col => `<td>${user[col] || ''}</td>`).join('');
+                    
+                    return `<tr>${checkboxCell}${dataCells}</tr>`;
                 }).join('');
                 
                 this.menuTable.innerHTML = `
@@ -1084,23 +1247,129 @@
                 `;
             }
             
-            startPressTimer() {
-                this.pressTimer = setTimeout(() => {
-                    this.captureAndCompare();
-                    this.cameraCircle.classList.add('capturing');
-                    setTimeout(() => this.cameraCircle.classList.remove('capturing'), 300);
-                }, 1000);
+            // Handle checkbox change in menu table
+            async handleMenuCheckbox(checkbox) {
+                const userName = checkbox.dataset.user;
+                const isChecked = checkbox.checked;
+                
+                try {
+                    checkbox.disabled = true;
+                    await this.updateEatenStatus(userName, isChecked);
+                    
+                    // Update local data for immediate feedback
+                    const statusColumnName = this.getStatusColumnName();
+                    const user = this.allMenuData.find(u => u[this.findNameColumn()] === userName);
+                    if (user) {
+                        user[statusColumnName] = isChecked ? 'Đã ăn' : '';
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to update checkbox:', error);
+                    checkbox.checked = !isChecked; // Revert checkbox
+                    alert('Không thể cập nhật trạng thái. Vui lòng thử lại.');
+                } finally {
+                    checkbox.disabled = false;
+                }
             }
             
-            stopPressTimer() {
-                if (this.pressTimer) {
-                    clearTimeout(this.pressTimer);
-                    this.pressTimer = null;
+            // Today mode handlers
+            handleUserSelect(e) {
+                this.selectedUser = e.target.value;
+                this.eatenButton.disabled = !this.selectedUser;
+            }
+            
+            async handleEatenClick() {
+                if (!this.selectedUser) return;
+                
+                try {
+                    this.eatenButton.disabled = true;
+                    this.eatenButton.textContent = 'Đang cập nhật...';
+                    
+                    await this.updateEatenStatus(this.selectedUser, true);
+                    
+                    this.eatenButton.textContent = 'Đã cập nhật!';
+                    setTimeout(() => {
+                        this.eatenButton.textContent = 'Đã ăn';
+                        this.eatenButton.disabled = false;
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Failed to mark as eaten:', error);
+                    this.eatenButton.textContent = 'Lỗi - Thử lại';
+                    setTimeout(() => {
+                        this.eatenButton.textContent = 'Đã ăn';
+                        this.eatenButton.disabled = false;
+                    }, 2000);
+                }
+            }
+            
+            populateUserSelect() {
+                const nameColumn = this.findNameColumn();
+                this.userSelect.innerHTML = '<option value="">Chọn tên...</option>';
+                
+                this.allUsersData
+                    .filter(user => user[nameColumn] && user[nameColumn].trim() !== '')
+                    .forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user[nameColumn];
+                        option.textContent = user[nameColumn];
+                        this.userSelect.appendChild(option);
+                    });
+            }
+            
+            updateTodayMenu() {
+                const today = new Date().getDay();
+                const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
+                const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
+                
+                this.todayTitle.textContent = `Món ăn ${currentDayKey}`;
+                
+                // Get menu from first user (assuming all users have same menu)
+                if (this.allUsersData.length > 0) {
+                    const menu = this.allUsersData[0][currentDayKey] || 'Không có thông tin thực đơn';
+                    this.todayMenuContent.textContent = menu;
+                } else {
+                    this.todayMenuContent.textContent = 'Đang tải thông tin...';
                 }
             }
             
             async init() {
                 try {
+                    // Load sheet data first
+                    const sheetsDataUpdated = await this.checkSheetsDataUpdated();
+                    let cachedUserData = this.getCache('user_data');
+                    
+                    if (sheetsDataUpdated || !cachedUserData) {
+                        this.todayMenuContent.textContent = 'Đang tải dữ liệu từ Google Sheets...';
+                        await this.loadUserDataFromGoogleSheets();
+                        this.setCache('user_data', this.allUsersData);
+                    } else {
+                        this.todayMenuContent.textContent = 'Đang tải dữ liệu từ cache...';
+                        this.allUsersData = cachedUserData;
+                    }
+                    
+                    // Reset daily status if needed
+                    await this.resetDailyStatus();
+                    
+                    // Update UI
+                    this.updateTodayMenu();
+                    this.populateUserSelect();
+                    this.todayMenuContent.textContent = this.todayMenuContent.textContent || 'Đã tải xong!';
+                    
+                } catch (error) {
+                    this.todayMenuContent.textContent = `Lỗi: ${error.message}`;
+                    console.error('Init error:', error);
+                }
+            }
+            
+            // Face detection initialization (only when tab is clicked)
+            async initFaceDetection() {
+                if (this.faceDetectInitialized) return;
+                
+                try {
+                    this.faceDetectInitialized = true;
+                    this.loadingOverlay.classList.remove('hidden');
+                    
                     // Check if models are cached
                     const cachedModels = this.getCache('models_loaded');
                     if (!cachedModels) {
@@ -1112,24 +1381,11 @@
                         await this.loadModels(); // Still need to load into memory
                     }
                     
-                    // Check if Google Sheets data needs to be reloaded
-                    const sheetsDataUpdated = await this.checkSheetsDataUpdated();
-                    let cachedUserData = this.getCache('user_data');
-                    
-                    if (sheetsDataUpdated || !cachedUserData) {
-                        this.updateLoadingText('Đang tải dữ liệu từ Google Sheets...');
-                        await this.loadUserDataFromGoogleSheets();
-                        this.setCache('user_data', this.allUsersData);
-                    } else {
-                        this.updateLoadingText('Đang tải dữ liệu từ cache...');
-                        this.allUsersData = cachedUserData;
-                    }
-                    
                     // Check cached face descriptors
                     let cachedDescriptors = this.getCache('face_descriptors');
                     const cachedDescriptorNames = this.getCache('descriptor_names');
                     
-                    if (sheetsDataUpdated || !cachedDescriptors || !cachedDescriptorNames || 
+                    if (!cachedDescriptors || !cachedDescriptorNames || 
                         !this.validateCachedDescriptors(cachedDescriptorNames)) {
                         this.updateLoadingText('Đang xử lý ảnh...');
                         await this.createLabeledFaceDescriptors();
@@ -1154,20 +1410,20 @@
                     this.faceMatcher = new faceapi.FaceMatcher(this.labeledFaceDescriptors, this.currentThreshold);
                     
                     // Auto detect device mode
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    this.detectDeviceMode();
                     
-                    if (isMobile) {
+                    if (this.isDesktopMode) {
+                        this.showDesktopMode();
+                        this.hideLoading();
+                    } else {
                         await this.initCamera();
                         this.hideLoading();
                         this.startDetection();
-                    } else {
-                        this.showDesktopMode();
-                        this.hideLoading();
                     }
                     
                 } catch (error) {
                     this.updateLoadingText(`Lỗi: ${error.message}`);
-                    console.error('Init error:', error);
+                    console.error('Face detection init error:', error);
                     
                     // Try to recover by clearing cache
                     if (error.message.includes('cache') || error.message.includes('Cache')) {
@@ -1239,7 +1495,9 @@
                         
                         if (!name || name.toString().trim() === '') return null;
                         
-                        const imgUrl = `data/face/${this.removeDiacritics(name)}.jpg`;
+                        // Support Vietnamese filenames - encode properly
+                        const fileName = this.removeDiacritics(name);
+                        const imgUrl = `data/face/${encodeURIComponent(fileName)}.jpg`;
                         
                         try {
                             this.updateLoadingText(`Xử lý ${processed + 1}/${totalUsers}: ${name}`);
@@ -1304,283 +1562,4 @@
                 for (const col of possibleColumns) {
                     if (this.allUsersData[0].hasOwnProperty(col)) return col;
                 }
-                return Object.keys(this.allUsersData[0])[0];
-            }
-            
-            removeDiacritics(str) {
-                if (!str) return '';
-                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
-            }
-            
-            async initCamera() {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-                });
-                this.video.srcObject = stream;
-                
-                return new Promise((resolve) => {
-                    this.video.addEventListener('loadedmetadata', resolve);
-                });
-            }
-            
-            toggleDetection() {
-                if (this.pressTimer) return;
-                
-                if (!this.isDesktopMode) {
-                    if (this.isDetecting) {
-                        this.stopDetection();
-                    } else {
-                        this.startDetection();
-                    }
-                }
-            }
-            
-            startDetection() {
-                if (this.isDetecting || this.isDesktopMode) return;
-                
-                this.isDetecting = true;
-                this.cameraCircle.classList.remove('found', 'not-found');
-                this.cameraCircle.classList.add('detecting');
-                this.updateUserInfo('Đang nhận diện...', 'detecting');
-                
-                const detect = async () => {
-                    if (!this.isDetecting) return;
-                    
-                    try {
-                        const detections = await faceapi
-                            .detectSingleFace(this.video, new faceapi.SsdMobilenetv1Options({ 
-                                minConfidence: 0.3, // Lowered from 0.5 for better detection
-                                maxResults: 1
-                            }))
-                            .withFaceLandmarks()
-                            .withFaceDescriptor();
-                        
-                        if (detections) {
-                            const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
-                            
-                            if (bestMatch.distance < this.currentThreshold) {
-                                this.cameraCircle.classList.remove('detecting', 'not-found');
-                                this.cameraCircle.classList.add('found');
-                                this.displayUserInfo(bestMatch.label);
-                            } else {
-                                this.cameraCircle.classList.remove('detecting', 'found');
-                                this.cameraCircle.classList.add('not-found');
-                                this.updateUserInfo('Không nhận diện được', 'not-found');
-                            }
-                        } else {
-                            this.cameraCircle.classList.remove('found', 'not-found');
-                            this.cameraCircle.classList.add('detecting');
-                            this.updateUserInfo('Không phát hiện khuôn mặt', 'detecting');
-                        }
-                    } catch (error) {
-                        console.warn('Detection error:', error);
-                    }
-                    
-                    if (this.isDetecting) {
-                        requestAnimationFrame(detect);
-                    }
-                };
-                
-                detect();
-            }
-            
-            stopDetection() {
-                this.isDetecting = false;
-                this.cameraCircle.classList.remove('detecting', 'found', 'not-found');
-                this.updateUserInfo('Nhấn để bắt đầu nhận diện', 'detecting');
-            }
-            
-            async captureAndCompare() {
-                if (!this.video.videoWidth || this.isDesktopMode) return;
-                
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = this.video.videoWidth;
-                    canvas.height = this.video.videoHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(this.video, 0, 0);
-                    
-                    const detections = await faceapi
-                        .detectSingleFace(canvas)
-                        .withFaceLandmarks()
-                        .withFaceDescriptor();
-                    
-                    if (detections) {
-                        const bestMatch = this.faceMatcher.findBestMatch(detections.descriptor);
-                        
-                        if (bestMatch.distance < this.currentThreshold) {
-                            this.cameraCircle.classList.remove('detecting', 'not-found');
-                            this.cameraCircle.classList.add('found');
-                            this.displayUserInfo(bestMatch.label);
-                        } else {
-                            this.cameraCircle.classList.remove('detecting', 'found');
-                            this.cameraCircle.classList.add('not-found');
-                            this.updateUserInfo('Không nhận diện được', 'not-found');
-                        }
-                    } else {
-                        this.cameraCircle.classList.remove('found', 'not-found');
-                        this.cameraCircle.classList.add('detecting');
-                        this.updateUserInfo('Không phát hiện khuôn mặt', 'not-found');
-                    }
-                } catch (error) {
-                    console.warn('Capture error:', error);
-                }
-            }
-            
-            displayUserInfo(name) {
-                const nameColumn = this.findNameColumn();
-                const user = this.allUsersData.find(u => u[nameColumn] && u[nameColumn].toLowerCase() === name.toLowerCase());
-                
-                if (user) {
-                    const today = new Date().getDay();
-                    const dayMapping = ['Chủ Nhật', 'Thứ2', 'Thứ3', 'Thứ4', 'Thứ5', 'Thứ6', 'Thứ7'];
-                    const currentDayKey = (today >= 1 && today <= 6) ? dayMapping[today] : 'Thứ2';
-                    
-                    this.userNameDisplay.textContent = user[nameColumn];
-                    this.userInfoDisplay.textContent = user[currentDayKey] || 'Không có lịch trình hôm nay';
-                } else {
-                    this.updateUserInfo('Lỗi dữ liệu', 'not-found');
-                }
-            }
-            
-            updateUserInfo(name, status = 'detecting') {
-                this.userNameDisplay.textContent = name;
-                if (status === 'detecting') {
-                    this.userInfoDisplay.textContent = 'Hướng camera vào khuôn mặt để nhận diện';
-                } else if (status === 'not-found') {
-                    this.userInfoDisplay.textContent = 'Vui lòng thử lại hoặc liên hệ quản trị viên';
-                }
-            }
-            
-            // Desktop mode functions
-            handleNameInput(e) {
-                const query = e.target.value.toLowerCase();
-                this.filterSuggestions(query);
-                
-                if (query.length > 0) {
-                    this.showSuggestions();
-                } else {
-                    this.hideSuggestions();
-                }
-            }
-            
-            filterSuggestions(query) {
-                const nameColumn = this.findNameColumn();
-                this.filteredSuggestions = this.allUsersData.filter(user => {
-                    const name = user[nameColumn] || '';
-                    return name.toLowerCase().includes(query) || 
-                           this.removeDiacritics(name).toLowerCase().includes(query);
-                }).slice(0, 8);
-                
-                this.selectedSuggestionIndex = -1;
-                this.renderSuggestions();
-            }
-            
-            renderSuggestions() {
-                const nameColumn = this.findNameColumn();
-                this.suggestionsDropdown.innerHTML = '';
-                
-                this.filteredSuggestions.forEach((user, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-                    item.textContent = user[nameColumn];
-                    item.addEventListener('click', () => this.selectSuggestion(user[nameColumn]));
-                    this.suggestionsDropdown.appendChild(item);
-                });
-            }
-            
-            handleKeyDown(e) {
-                const items = this.suggestionsDropdown.querySelectorAll('.suggestion-item');
-                
-                switch(e.key) {
-                    case 'ArrowDown':
-                        e.preventDefault();
-                        this.selectedSuggestionIndex = Math.min(this.selectedSuggestionIndex + 1, items.length - 1);
-                        this.highlightSuggestion(items);
-                        break;
-                    case 'ArrowUp':
-                        e.preventDefault();
-                        this.selectedSuggestionIndex = Math.max(this.selectedSuggestionIndex - 1, -1);
-                        this.highlightSuggestion(items);
-                        break;
-                    case 'Enter':
-                        e.preventDefault();
-                        if (this.selectedSuggestionIndex >= 0 && items[this.selectedSuggestionIndex]) {
-                            this.selectSuggestion(items[this.selectedSuggestionIndex].textContent);
-                        } else {
-                            this.searchByInput();
-                        }
-                        break;
-                    case 'Escape':
-                        this.hideSuggestions();
-                        this.nameInput.blur();
-                        break;
-                }
-            }
-            
-            highlightSuggestion(items) {
-                items.forEach((item, index) => {
-                    item.classList.toggle('highlighted', index === this.selectedSuggestionIndex);
-                });
-            }
-            
-            selectSuggestion(name) {
-                this.nameInput.value = name;
-                this.hideSuggestions();
-                this.displayUserInfo(name);
-            }
-            
-            searchByInput() {
-                const name = this.nameInput.value.trim();
-                if (!name) return;
-                
-                const nameColumn = this.findNameColumn();
-                const user = this.allUsersData.find(u => 
-                    u[nameColumn] && (
-                        u[nameColumn].toLowerCase().includes(name.toLowerCase()) ||
-                        this.removeDiacritics(u[nameColumn]).toLowerCase().includes(name.toLowerCase())
-                    )
-                );
-                
-                if (user) {
-                    this.displayUserInfo(user[nameColumn]);
-                } else {
-                    this.updateUserInfo('Không tìm thấy', 'not-found');
-                }
-            }
-            
-            showSuggestions() {
-                if (this.filteredSuggestions.length > 0) {
-                    this.suggestionsDropdown.style.display = 'block';
-                }
-            }
-            
-            hideSuggestions() {
-                this.suggestionsDropdown.style.display = 'none';
-            }
-        }
-        
-        // Global function for cache clearing
-        function clearCacheAndReload() {
-            if (confirm('Xóa cache sẽ làm trang web tải lại từ đầu. Bạn có chắc chắn?')) {
-                try {
-                    Object.keys(localStorage).forEach(key => {
-                        if (key.startsWith('face_recognition_')) {
-                            localStorage.removeItem(key);
-                        }
-                    });
-                    location.reload();
-                } catch (error) {
-                    console.warn('Cache clear failed:', error);
-                    location.reload();
-                }
-            }
-        }
-        
-        // Initialize app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            new MinimalFaceRecognition();
-        });
-    </script>
-</body>
-</html>
+                return Object.keys(this
